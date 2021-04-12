@@ -25,7 +25,4 @@ except:
 patients = read_patients_table(args.mimic4_path)
 #read data from the core/patient.csv file
 admits = read_admissions_table(args.mimic4_path)
-
-
-
-
+stays = read_icustays_table(args.mimic4_path)
