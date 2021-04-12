@@ -27,7 +27,7 @@ def read_admissions_table(mimic4_path):
 #Read icu stay
 def read_icustays_table(mimic4_path):
     stays = datafram_from_csv(os.path.join(mimic4_path, 'icu/icustays.csv'))
-    stays = stays[['subject_id', 'hadm_id', 'stay_id', 'intime', 'outtime', 'los']]
+    stays = stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit' 'intime', 'outtime', 'los']]
     stays.intime = pd.to_datetime(stays.intime)
     stays.outtime = pd.to_datetime(stays.outtime)
     return stays
@@ -37,12 +37,16 @@ def read_icustays_table(mimic4_path):
 def merge_on_subject_admission(table1, table2):
     return table1.merge(table2,  how='inner', left_on=['subject_id', 'hadm_id'], right_on=['subject_id', 'hadm_id'])
 
-    #Merge on subject 
+#Merge on subject 
 def merge_on_subject(table1, table2):
     return table1.merge(table2,  how='inner', left_on=['subject_id'], right_on=['subject_id'])
 
 
-
+#removes ICU stays which start and end in different ICU types
+#NOTE: in MIMIC III there was a first/last wardID variable in order to filter out those who changed ICU unit,
+# but stayed in the same ICU type, not sure how to do this for MIMIC-IV since the variable is gone
 def remove_icustays_with_transfers(stays):
-    stays = stays[(stays.FIRST_WARDID == stays.LAST_WARDID) & (stays.FIRST_CAREUNIT == stays.LAST_CAREUNIT)]
-    return stays[['SUBJECT_ID', 'HADM_ID', 'ICUSTAY_ID', 'LAST_CAREUNIT', 'DBSOURCE', 'INTIME', 'OUTTIME', 'LOS']]
+    stays = stays[(stays.first_careunit == stays.last_careunit)]
+    return stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit' 'intime', 'outtime', 'los']]
+
+
