@@ -34,4 +34,8 @@ def read_icustays_table(mimic4_path):
 
 #Merge on subject admission
 def merge_on_subject_admission(table1, table2):
-    return table1.merge(table2,  how='inner', left_on=['SUBJECT_ID', 'HADM_ID'], right_on=['SUBJECT_ID', 'HADM_ID'])
+    return table1.merge(table2,  how='inner', left_on=['subject_id', 'hadm_id'], right_on=['subject_id', 'hadm_id'])
+
+    #Merge on subject 
+def merge_on_subject(table1, table2):
+    return table1.merge(table2,  how='inner', left_on=['subject_id'], right_on=['subject_id'])
