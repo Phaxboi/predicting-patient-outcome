@@ -4,6 +4,7 @@
 
 import argparse
 import os
+import numpy as np
 
 from mimic4csv import *
 
@@ -23,10 +24,13 @@ except:
 
 #read data from the core/patient.csv file
 patients = read_patients_table(args.mimic4_path)
+pat_idx = np.random.choice(patients.shape[0], size=10)
+patients = patients.iloc[pat_idx]
 #read data from the core/patient.csv file
 admits = read_admissions_table(args.mimic4_path)
 #read data from the icu/icustays.csv file
 stays = read_icustays_table(args.mimic4_path)
+stays = stays.merge(patients[['subject_id']], left_on='subject_id', right_on='subject_id')
 #remove admissions with transfers between different ICU units or wards
 stays = remove_icustays_with_transfer(stays)
 #merges stays and admits based on the patient IDs
