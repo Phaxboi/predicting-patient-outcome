@@ -32,6 +32,7 @@ def read_icustays_table(mimic4_path):
     stays.outtime = pd.to_datetime(stays.outtime)
     return stays
 
+
 #Merge on subject admission
 def merge_on_subject_admission(table1, table2):
     return table1.merge(table2,  how='inner', left_on=['subject_id', 'hadm_id'], right_on=['subject_id', 'hadm_id'])
@@ -39,3 +40,9 @@ def merge_on_subject_admission(table1, table2):
     #Merge on subject 
 def merge_on_subject(table1, table2):
     return table1.merge(table2,  how='inner', left_on=['subject_id'], right_on=['subject_id'])
+
+
+
+def remove_icustays_with_transfers(stays):
+    stays = stays[(stays.FIRST_WARDID == stays.LAST_WARDID) & (stays.FIRST_CAREUNIT == stays.LAST_CAREUNIT)]
+    return stays[['SUBJECT_ID', 'HADM_ID', 'ICUSTAY_ID', 'LAST_CAREUNIT', 'DBSOURCE', 'INTIME', 'OUTTIME', 'LOS']]
