@@ -55,6 +55,16 @@ def filter_admissions_on_nb_icustays(stays, min_nb_stays=1, max_nb_stays=1):
     return stays
 
 
+#calculate the add of a patient by subtracting their year of birth by their year of admission
+#NOTE: this assumes that 'admittime' in core/admission.csv' is relative to the 'anchor_age', will need
+#to verify this
+def add_age_to_icustays(stays):
+    stays['admityear'] = (stays['admittime']).dt.year
+    stays['age'] = stays.apply(lambda s : (s['admityear'] - s['dob']), axis=1)
+    #stays.loc[stays.AGE < 0, 'age'] = 90
+    return stays
+
+
 #filter patients younger than 18
 def filter_icustays_on_age(stays, min_age=18, max_age=np.inf):
     stays = stays[(stays.age >= min_age) & (stays.age <= max_age)]
