@@ -23,3 +23,5 @@ except:
 patients = read_patients_table(args.mimic4_path)
 admits = read_admissions_table(args.mimic4_path)
 stays = read_icustays_table(args.mimic4_path)
+
+stays = merge_on_subject_admission(stays,admits)

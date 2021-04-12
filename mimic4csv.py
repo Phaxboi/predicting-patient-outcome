@@ -31,3 +31,8 @@ def read_icustays_table(mimic4_path):
     stays.intime = pd.to_datetime(stays.intime)
     stays.outtime = pd.to_datetime(stays.outtime)
     return stays
+
+#Merge on subject admission ((stays, admits))
+def merge_on_subject_admission(table1, table2):
+    return table1.merge(table2, how='inner', left_on=[subject_id, hadm_id], right_on=[subject_id, hadm_id])
+    
