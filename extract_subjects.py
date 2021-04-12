@@ -29,3 +29,4 @@ stays = read_icustays_table(args.mimic4_path)
 
 stays = merge_on_subject_admission(stays, admits)
 stays = merge_on_subject(stays, patients)
+stays = filter_admissions_on_nb_icustays(stays)
