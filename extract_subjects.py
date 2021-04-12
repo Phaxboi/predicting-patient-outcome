@@ -27,5 +27,7 @@ patients = read_patients_table(args.mimic4_path)
 admits = read_admissions_table(args.mimic4_path)
 #read data from the icu/icustays.csv file
 stays = read_icustays_table(args.mimic4_path)
+#merges stays and admits based on the patient IDs
+stays = merge_on_subject_admission(stays, admits)
 #remove admissions with transfers between different ICU units or wards
 stays = remove_icustays_with_transfer(stays)
