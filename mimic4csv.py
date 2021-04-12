@@ -24,7 +24,7 @@ def read_admissions_table(mimic4_path):
 #Read icu stay
 def read_icustays_table(mimic4_path):
     stays = pd.read_csv((os.path.join(mimic4_path, 'icu', 'icustays.csv')))
-    stays = stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit' 'intime', 'outtime', 'los']]
+    stays = stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit', 'intime', 'outtime', 'los']]
     stays.intime = pd.to_datetime(stays.intime)
     stays.outtime = pd.to_datetime(stays.outtime)
     return stays
@@ -46,17 +46,4 @@ def remove_icustays_with_transfers(stays):
     stays = stays[(stays.first_careunit == stays.last_careunit)]
     return stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit' 'intime', 'outtime', 'los']]
 
-
-#filter out admissions which have more(or less) than one ICU stay per admission
-def filter_admissions_on_nb_icustays(stays, min_nb_stays=1, max_nb_stays=1):
-    to_keep = stays.groupby('hadm_id').count()[['stay_id']].reset_index()
-    to_keep = to_keep[(to_keep.stay_id >= min_nb_stays) & (to_keep.stay_id <= max_nb_stays)][['hadm_id']]
-    stays = stays.merge(to_keep, how='inner', left_on='hadm_id', right_on='hadm_id')
-    return stays
-
-
-#filter patients younger than 18
-def filter_icustays_on_age(stays, min_age=18, max_age=np.inf):
-    stays = stays[(stays.age >= min_age) & (stays.age <= max_age)]
-    return stays
 
