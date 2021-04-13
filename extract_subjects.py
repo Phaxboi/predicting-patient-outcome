@@ -25,7 +25,7 @@ except:
 
 #read data from the core/patient.csv file
 patients = read_patients_table(args.mimic4_path)
-pat_idx = np.random.choice(patients.shape[0], size=1000)
+pat_idx = np.random.choice(patients.shape[0], size=10)
 patients = patients.iloc[pat_idx]
 #read data from the core/patient.csv file
 admits = read_admissions_table(args.mimic4_path)
@@ -33,17 +33,25 @@ admits = read_admissions_table(args.mimic4_path)
 stays = read_icustays_table(args.mimic4_path)
 stays = stays.merge(patients[['subject_id']], left_on='subject_id', right_on='subject_id')
 
-#DOB test
-plt.hist(patients.dob)
-plt.show()
-
-
-
 #remove admissions with transfers between different ICU units or wards
-stays = remove_icustays_with_transfer(stays)
+stays = remove_icustays_with_transfers(stays)
 #merges stays and admits based on the patient IDs
 stays = merge_on_subject_admission(stays, admits)
 stays = merge_on_subject(stays, patients)
 stays = filter_admissions_on_nb_icustays(stays)
 
+#add admityear and age to stays
+stays = add_age_to_icustays(stays)
+
+stays = add_inunit_mortality_to_icustays(stays)
+
+########################### TEST ########################### 
+
+#DOB test
+#plt.hist(patients.dob)
+#plt.show()
+
+#Age test
+#plt.hist(stays.age)
+#plt.show()
 

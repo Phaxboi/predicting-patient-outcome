@@ -3,6 +3,7 @@
 
 import os
 import pandas as pd
+import numpy as np
 
 
 #Read patients data, added dob (only year), do not change to to_datetime
@@ -44,7 +45,7 @@ def merge_on_subject(table1, table2):
 # but stayed in the same ICU type, not sure how to do this for MIMIC-IV since the variable is gone
 def remove_icustays_with_transfers(stays):
     stays = stays[(stays.first_careunit == stays.last_careunit)]
-    return stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit' 'intime', 'outtime', 'los']]
+    return stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit', 'intime', 'outtime', 'los']]
 
 
 #filter out admissions which have more(or less) than one ICU stay per admission
@@ -70,3 +71,12 @@ def filter_icustays_on_age(stays, min_age=18, max_age=np.inf):
     stays = stays[(stays.age >= min_age) & (stays.age <= max_age)]
     return stays
 
+
+def add_inunit_mortality_to_icustays(stays):
+    mortality = stays.dod.notnull()
+
+def add_inunit_mortality_to_icustays(stays):
+    mortality = stays.DOD.notnull() & ((stays.INTIME <= stays.DOD) & (stays.OUTTIME >= stays.DOD))
+    mortality = mortality | (stays.DEATHTIME.notnull() & ((stays.INTIME <= stays.DEATHTIME) & (stays.OUTTIME >= stays.DEATHTIME)))
+    stays['MORTALITY_INUNIT'] = mortality.astype(int)
+    return stays
