@@ -24,7 +24,7 @@ def read_admissions_table(mimic4_path):
 #Read icu stay
 def read_icustays_table(mimic4_path):
     stays = pd.read_csv((os.path.join(mimic4_path, 'icu', 'icustays.csv')))
-    stays = stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit' 'intime', 'outtime', 'los']]
+    stays = stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit', 'intime', 'outtime', 'los']]
     stays.intime = pd.to_datetime(stays.intime)
     stays.outtime = pd.to_datetime(stays.outtime)
     return stays
