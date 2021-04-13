@@ -8,7 +8,7 @@ import pandas as pd
 #Read patients data, added dob (only year), do not change to to_datetime
 def read_patients_table(mimic4_path):
     patients = pd.read_csv((os.path.join(mimic4_path, 'core', 'patients.csv')))
-    patients = patients[['subject_id', 'gender', 'anchor_age', 'anchor_year', 'dod']]
+    patients = patients[['subject_id', 'gender', 'anchor_age', 'anchor_year', 'dod', 'hospital_expire_flag']]
     patients['dob'] = patients.anchor_year-patients.anchor_age
     return patients
 
@@ -69,4 +69,24 @@ def add_age_to_icustays(stays):
 def filter_icustays_on_age(stays, min_age=18, max_age=np.inf):
     stays = stays[(stays.age >= min_age) & (stays.age <= max_age)]
     return stays
+
+
+#add an indicator whether the patient died in hospital 
+#NOTE: should be the same as hospital_expire_flag, if they're the same this can be removed
+def add_inhospital_mortality_to_icustays(stays):
+    mortality = stays.dod.notnull() & ((stays.admittime <= stays.dod) & (stays.dischtime >= stays.dod))
+    mortality = mortality | (stays.deathtime.notnull() & ((stays.admittime <= stays.deathtime) & (stays.dischtime >= stays.deathtime)))
+    stays['mortality_inhospital'] = mortality.astype(int)
+    return stays
+
+
+#add an indicator whether the patient died in the current care unit
+#should compare this to 'mortality_inhospitalä' to ensure it working properly
+def add_inunit_mortality_to_icustays(stays):
+    mortality = stays.dod.notnull() & ((stays.intime <= stays.dod) & (stays.outtime >= stays.dod))
+    mortality = mortality | (stays.deathtime.notnull() & ((stays.intime <= stays.deathtime) & (stays.outtime >= stays.deathtime)))
+    stays['mortality_inunit'] = mortality.astype(int)
+    return stays
+
+
 
