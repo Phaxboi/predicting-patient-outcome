@@ -29,6 +29,17 @@ def read_icustays_table(mimic4_path):
     stays.outtime = pd.to_datetime(stays.outtime)
     return stays
 
+#read the diagnoses table
+#NOTE: MIMIC-IV has both ICD9 and ICD10 codes, so we have to look at both code and version when merging, not sure
+#if this is needed, will have to confirm that this is correct later
+def read_icd_diagnoses_table(mimic4_path):
+    codes = dataframe_from_csv(os.path.join(mimic4_path, 'd_icd_diagnoses.csv'))
+    codes = codes[['icd_code', 'icd_version', 'long_title']]
+    diagnoses = dataframe_from_csv(os.path.join(mimic4_path, 'diagnoses_icd.csv'))
+    diagnoses = diagnoses.merge(codes, how='inner', left_on=['icd_code', 'icd_version'], right_on=['icd_code', 'icd_verison'])
+    diagnoses[['subject_id', 'hadm_id', 'seq_num']] = diagnoses[['subject_id', 'hadm_id', 'seq_num']].astype(int)
+    return diagnoses
+
 
 #Merge on subject admission
 def merge_on_subject_admission(table1, table2):
@@ -89,4 +100,8 @@ def add_inunit_mortality_to_icustays(stays):
     return stays
 
 
+#match diagnoses to a hospital stay by merging 
+def filter_diagnoses_on_stays(diagnoses, stays):
+    return diagnoses.merge(stays[['subject_id', 'hadm_id', 'icustay_id']].drop_duplicates(), how='inner',
+                           left_on=['subject_id', 'hadm_id'], right_on=['subject_id', 'hadm_id'])
 
