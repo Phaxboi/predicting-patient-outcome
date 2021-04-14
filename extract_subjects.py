@@ -23,6 +23,21 @@ except:
     pass
 
 
+#arbitrary CSV file
+test_frame = pd.read_csv(args.mimic4_path)
+#will make row 'subject_id' to index but still keep the original column(in order to access the data)
+test_frame.set_index('subject_id', inplace=True, drop=False)
+#sample 10 random items from column 'subject_id'
+pat_idx = test_frame['subject_id'].sample(n=10)
+#this now works because 'subject_id' is also the index
+temp = test_frame.loc[pat_idx]
+
+#path
+#temp.to_csv(r'C:\Users\Philip Svensson\Documents\Exjobb\predicting-patient-outcome\data\data.csv')
+
+
+
+
 #read data from the core/patient.csv file
 patients = read_patients_table(args.mimic4_path)
 pat_idx = np.random.choice(patients.shape[0], size=10)

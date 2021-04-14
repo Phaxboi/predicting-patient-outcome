@@ -106,3 +106,4 @@ def filter_diagnoses_on_stays(diagnoses, stays):
     return diagnoses.merge(stays[['subject_id', 'hadm_id', 'icustay_id']].drop_duplicates(), how='inner',
                            left_on=['subject_id', 'hadm_id'], right_on=['subject_id', 'hadm_id'])
 
+
