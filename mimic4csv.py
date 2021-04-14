@@ -5,6 +5,8 @@ import os
 import pandas as pd
 import numpy as np
 
+from tqdm import tqdm
+
 
 #Read patients data, added dob (only year), do not change to to_datetime
 def read_patients_table(mimic4_path):
@@ -59,7 +61,7 @@ def remove_icustays_with_transfers(stays):
     return stays[['subject_id', 'hadm_id', 'stay_id', 'first_careunit', 'last_careunit', 'intime', 'outtime', 'los']]
 
 
-#filter out admissions which have more(or less) than one ICU stay per admission
+#filter out admissions on the number of ICU stay per admission
 def filter_admissions_on_nb_icustays(stays, min_nb_stays=1, max_nb_stays=1):
     to_keep = stays.groupby('hadm_id').count()[['stay_id']].reset_index()
     to_keep = to_keep[(to_keep.stay_id >= min_nb_stays) & (to_keep.stay_id <= max_nb_stays)][['hadm_id']]
@@ -101,9 +103,98 @@ def add_inunit_mortality_to_icustays(stays):
     return stays
 
 
-#match diagnoses to a hospital stay by merging 
+#match diagnoses to a patients hospital stay by merging 
 def filter_diagnoses_on_stays(diagnoses, stays):
     return diagnoses.merge(stays[['subject_id', 'hadm_id', 'icustay_id']].drop_duplicates(), how='inner',
                            left_on=['subject_id', 'hadm_id'], right_on=['subject_id', 'hadm_id'])
 
 
+#identify each unique subject ID, create a folder for them and create a CSV file with a summary of their stays
+def break_up_stays_by_subject(stays, output_path, subjects=None):
+    subjects = stays.subject_id.unique() if subjects is None else subjects
+    nb_subjects = subjects.shape[0]
+    for subj_id in tqdm(subjects, total=nb_subjects, desc='Breaking up stays by subjects'):
+        dn = os.path.join(output_path, str(subj_id))
+        try:
+            os.makedirs(dn)
+        except:
+            pass
+
+        stays[stays.subject_id == subj_id].sort_values(by='intime').to_csv(os.path.join(dn, 'stays.csv'),
+                                                                              index=False)
+
+
+#identifiy unique subjects, create a folder with a summary of their diagnoses
+def break_up_diagnoses_by_subject(diagnoses, output_path, subjects=None):
+    subjects = diagnoses.subject_id.unique() if subjects is None else subjects
+    nb_subjects = subjects.shape[0]
+    for subj_id in tqdm(subjects, total=nb_subjects, desc='Breaking up diagnoses by subjects'):
+        dn = os.path.join(output_path, str(subj_id))
+        try:
+            os.makedirs(dn)
+        except:
+            pass
+
+        diagnoses[diagnoses.subject_id == subj_id].sort_values(by=['icustay_id', 'seq_num'])\
+                                                     .to_csv(os.path.join(dn, 'diagnoses.csv'), index=False)
+
+
+#identify unique subjects, create folder with csv of their events
+#NOTE: not sure how this works so some variable names are wrong since this is a copy paste, will have to
+#revisit once we have data to debug/test with
+def read_events_table_and_break_up_by_subject(mimic3_path, table, output_path,
+                                              items_to_keep=None, subjects_to_keep=None):
+    #header for the events.csv file
+    obs_header = ['SUBJECT_ID', 'HADM_ID', 'ICUSTAY_ID', 'CHARTTIME', 'ITEMID', 'VALUE', 'VALUEUOM']
+    if items_to_keep is not None:
+        items_to_keep = set([str(s) for s in items_to_keep])
+    if subjects_to_keep is not None:
+        subjects_to_keep = set([str(s) for s in subjects_to_keep])
+
+    class DataStats(object):
+        def __init__(self):
+            self.curr_subject_id = ''
+            self.curr_obs = []
+
+    data_stats = DataStats()
+
+    def write_current_observations():
+        dn = os.path.join(output_path, str(data_stats.curr_subject_id))
+        try:
+            os.makedirs(dn)
+        except:
+            pass
+        fn = os.path.join(dn, 'events.csv')
+        if not os.path.exists(fn) or not os.path.isfile(fn):
+            f = open(fn, 'w')
+            f.write(','.join(obs_header) + '\n')
+            f.close()
+        w = csv.DictWriter(open(fn, 'a'), fieldnames=obs_header, quoting=csv.QUOTE_MINIMAL)
+        w.writerows(data_stats.curr_obs)
+        data_stats.curr_obs = []
+
+    nb_rows_dict = {'chartevents': 330712484, 'labevents': 27854056, 'outputevents': 4349219}
+    nb_rows = nb_rows_dict[table.lower()]
+
+    for row, row_no, _ in tqdm(read_events_table_by_row(mimic3_path, table), total=nb_rows,
+                                                        desc='Processing {} table'.format(table)):
+
+        if (subjects_to_keep is not None) and (row['SUBJECT_ID'] not in subjects_to_keep):
+            continue
+        if (items_to_keep is not None) and (row['ITEMID'] not in items_to_keep):
+            continue
+
+        row_out = {'SUBJECT_ID': row['SUBJECT_ID'],
+                   'HADM_ID': row['HADM_ID'],
+                   'ICUSTAY_ID': '' if 'ICUSTAY_ID' not in row else row['ICUSTAY_ID'],
+                   'CHARTTIME': row['CHARTTIME'],
+                   'ITEMID': row['ITEMID'],
+                   'VALUE': row['VALUE'],
+                   'VALUEUOM': row['VALUEUOM']}
+        if data_stats.curr_subject_id != '' and data_stats.curr_subject_id != row['SUBJECT_ID']:
+            write_current_observations()
+        data_stats.curr_obs.append(row_out)
+        data_stats.curr_subject_id = row['SUBJECT_ID']
+
+    if data_stats.curr_subject_id != '':
+        write_current_observations()
