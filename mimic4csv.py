@@ -145,7 +145,7 @@ def break_up_diagnoses_by_subject(diagnoses, output_path, subjects=None):
 def read_events_table_and_break_up_by_subject(mimic3_path, table, output_path,
                                               items_to_keep=None, subjects_to_keep=None):
     #header for the events.csv file
-    obs_header = ['SUBJECT_ID', 'HADM_ID', 'ICUSTAY_ID', 'CHARTTIME', 'ITEMID', 'VALUE', 'VALUEUOM']
+    obs_header = ['subject_id', 'hadm_id', 'icustay_id', 'charttime', 'itemid', 'value', 'valueuom']
     if items_to_keep is not None:
         items_to_keep = set([str(s) for s in items_to_keep])
     if subjects_to_keep is not None:
@@ -179,22 +179,22 @@ def read_events_table_and_break_up_by_subject(mimic3_path, table, output_path,
     for row, row_no, _ in tqdm(read_events_table_by_row(mimic3_path, table), total=nb_rows,
                                                         desc='Processing {} table'.format(table)):
 
-        if (subjects_to_keep is not None) and (row['SUBJECT_ID'] not in subjects_to_keep):
+        if (subjects_to_keep is not None) and (row['subject_id'] not in subjects_to_keep):
             continue
-        if (items_to_keep is not None) and (row['ITEMID'] not in items_to_keep):
+        if (items_to_keep is not None) and (row['itemid'] not in items_to_keep):
             continue
 
-        row_out = {'SUBJECT_ID': row['SUBJECT_ID'],
-                   'HADM_ID': row['HADM_ID'],
-                   'ICUSTAY_ID': '' if 'ICUSTAY_ID' not in row else row['ICUSTAY_ID'],
-                   'CHARTTIME': row['CHARTTIME'],
-                   'ITEMID': row['ITEMID'],
-                   'VALUE': row['VALUE'],
-                   'VALUEUOM': row['VALUEUOM']}
-        if data_stats.curr_subject_id != '' and data_stats.curr_subject_id != row['SUBJECT_ID']:
+        row_out = {'subject_id': row['subject_id'],
+                   'hadm_id': row['hadm_id'],
+                   'icustay_id': '' if 'icustay_id' not in row else row['icustay_id'],
+                   'charttime': row['charttime'],
+                   'itemid': row['itemid'],
+                   'value': row['value'],
+                   'valueuom': row['valueuom']}
+        if data_stats.curr_subject_id != '' and data_stats.curr_subject_id != row['subject_id']:
             write_current_observations()
         data_stats.curr_obs.append(row_out)
-        data_stats.curr_subject_id = row['SUBJECT_ID']
+        data_stats.curr_subject_id = row['subject_id']
 
     if data_stats.curr_subject_id != '':
         write_current_observations()
