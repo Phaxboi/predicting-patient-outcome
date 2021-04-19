@@ -42,3 +42,17 @@ def read_icustays_table(mimic4_path)
 
 
 
+#merge per-patient information with per-admission information
+def merge_patients_admissions(patients, admissions)
+    patients_info = patients.merge(admissions, how='inner', left_on='subject_id', right_on='subject_id')
+    return patients_info
+
+#merge patient+admission information with transfer information
+def merge_admissions_transfers(patients_info, transfers)
+    patients_info = patients_info.merge(transfers, how='inner', left_on=['subject_id', 'hadm_id'] right_on=['subject_id', 'hadm_id'])
+
+#merge with icu stay information
+def merge_admissions_stays(patients_info, icustays)
+    patients_info = patients_info.merge(icustays, how='inner', left_on=['subject_id', 'hadm_id'] right_on=['subject_id', 'hadm_id'])
+
+

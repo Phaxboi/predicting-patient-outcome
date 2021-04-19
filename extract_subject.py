@@ -26,4 +26,17 @@ patients = read_patients_table(args.mimic4_path)
 admissions = read_admissions_table(args.mimic4_path)
 transfers = read_transfers_table(args.mimic4_path)
 
+#read icustays table from the 'ICU' folder
+icustays = read_icustays_table(args.mimic4_path)
 
+#TODO: exclude cases we don't want
+
+
+#merge per-patient information with per-admission information
+patients_info = merge_patients_admissions(patients, admissions)
+
+#merge per-admission data with transfers
+patients_info = merge_admissions_transfers(patients_info, transfers)
+
+#merge admission data with icu stay data
+patients_info = merge_admissions_stays(patients_info, icustays)
