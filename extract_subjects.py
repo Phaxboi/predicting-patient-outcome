@@ -6,6 +6,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+from mimic4csv import *
 
 #parsing the command to split the data and describing its parameters
 parser = argparse.ArgumentParser(description='Extract per subject data from the MIMIC-IV dataset')
@@ -40,3 +41,15 @@ patients_info = merge_admissions_transfers(patients_info, transfers)
 
 #merge admission data with icu stay data
 patients_info = merge_admissions_stays(patients_info, icustays)
+
+
+
+#calcualte age of all patients at the time of their stays
+patients_info = add_patient_age(patients_info)
+
+#filter patients on age
+patients_info = filter_patients_age(patients_info)
+
+
+#write a csv
+patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)

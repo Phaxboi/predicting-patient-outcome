@@ -11,8 +11,8 @@ from tqdm import tqdm
 #read the 'core/patients.csv' file and extracts the fields we want
 def read_patients_table(mimic4_path)
     patients = pd.read_csv(os.path.join(mimic4_path, 'core', 'patients.csv'))
-    patients['dob'] = patients.anchor_year - patients.anchor_age
-    patients = patients[['subject_id', 'gender', 'dob', 'dod']]
+    patients['birth_year'] = patients.anchor_year - patients.anchor_age
+    patients = patients[['subject_id', 'gender', 'birth_year', 'dod']]
     return patients
 
 #read the 'core/admissions.csv' file and extract the fields we want
@@ -55,4 +55,15 @@ def merge_admissions_transfers(patients_info, transfers)
 def merge_admissions_stays(patients_info, icustays)
     patients_info = patients_info.merge(icustays, how='inner', left_on=['subject_id', 'hadm_id'] right_on=['subject_id', 'hadm_id'])
 
+
+
+#calculate the age of all patients and add that as a column
+def add_patient_age(patients_info)
+    patients_info['age'] = patients_info.apply(lambda s : ((s['admityear']).dt.year - s['birth_year']), axis=1)
+    return patients_info
+
+#filter patients on age
+def filter_patients_age(patients_info, min_age=18, max_age=np.inf)
+    patients_info = patients_info[(patients_info.age >= min_age) & (patients_info.age <= max_age)]
+    return patients_info
 
