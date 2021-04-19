@@ -133,3 +133,4 @@ dmypy.json
 data/ 
 microbiologyevents.csv 
 small_100_database_files 
+parsed_data/ 
