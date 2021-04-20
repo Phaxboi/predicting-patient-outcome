@@ -55,12 +55,13 @@ patients_info = add_patient_age(patients_info)
 #filter patients on age
 patients_info = filter_patients_age(patients_info)
 
+fix_missing_deathtimes(patients_info)
 
 #write a csv summary of all patients
-#patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
+patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
 
 #break up subjects 
-break_up_stays_by_subject(patients_info, output_path)
+#break_up_stays_by_subject(patients_info, output_path)
 
 
 

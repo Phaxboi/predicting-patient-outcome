@@ -4,6 +4,7 @@
 import os
 import pandas as pd
 import numpy as np
+import datetime
 
 from tqdm import tqdm
 
@@ -77,6 +78,17 @@ def add_patient_age(patients_info):
 def filter_patients_age(patients_info, min_age=18, max_age=np.inf):
     patients_info = patients_info[(patients_info.age >= min_age) & (patients_info.age <= max_age)]
     return patients_info
+
+#function to fix patients with missing the 'deathtime' field, desptie dying in hospital
+#NOTE: currently calculates this by 'admittime' + 'los', alternatively we could 
+def fix_missing_deathtimes(patients_info):
+    indices = patients_info.index[(patients_info['hospital_expire_flag'] == 1) & (patients_info['deathtime'].isnull())].tolist()
+    for index in indices:
+        patients_info.at[index, 'deathtime'] = patients_info.at[index, 'admittime'] + datetime.timedelta(patients_info.at[index, 'los'])
+    return patients_info
+#15566609,22132197,2123-04-15 19:52:00,2123-04-21 20:10:00,2123-04-21 20:10:00,EW EMER.,EMERGENCY ROOM,DIED,Medicare,ENGLISH,MARRIED,WHITE,2123-04-15 17:16:00,2123-04-15 20:20:00,1
+
+
 
 #break up stays by patients
 #creates a folder for each patient and create a file with a summary of their hospital stays 
