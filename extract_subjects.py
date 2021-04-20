@@ -26,19 +26,23 @@ except:
 #start reading data from the 'core' folder
 patients = read_patients_table(mimic4_path)
 admissions = read_admissions_table(mimic4_path)
-transfers = read_transfers_table(mimic4_path)
+#transfers = read_transfers_table(mimic4_path)
 
 #read icustays table from the 'ICU' folder
 icustays = read_icustays_table(mimic4_path)
 
 #TODO: exclude cases we don't want
+icustays = filter_icustays_with_transfers(icustays)
+
+#filter icustays less than 48 hours
+icustays = filter_icustays_48h(icustays)
 
 
 #merge per-patient information with per-admission information
 patients_info = merge_patients_admissions(patients, admissions)
 
 #merge per-admission data with transfers
-patients_info = merge_admissions_transfers(patients_info, transfers)
+#patients_info = merge_admissions_transfers(patients_info, transfers)
 
 #merge admission data with icu stay data
 patients_info = merge_admissions_stays(patients_info, icustays)
@@ -52,6 +56,11 @@ patients_info = add_patient_age(patients_info)
 patients_info = filter_patients_age(patients_info)
 
 
-#write a csv
-patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
+#write a csv summary of all patients
+#patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
+
+#break up subjects 
+break_up_stays_by_subject(patients_info, output_path)
+
+
 
