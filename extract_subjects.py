@@ -65,7 +65,9 @@ patients_info = rearrange_columns(patients_info, columns_title)
 #write a csv summary of all patients
 patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
 
-#break up subjects 
+#break up subjects
+#NOTE: will generate a folder and file for each subject which takes ages to delete, so only run
+#this if you really need it
 #break_up_stays_by_subject(patients_info, output_path)
 
 
