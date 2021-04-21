@@ -55,7 +55,12 @@ patients_info = add_patient_age(patients_info)
 #filter patients on age
 patients_info = filter_patients_age(patients_info)
 
+#fix patients missing the 'deathtime' value
 fix_missing_deathtimes(patients_info)
+
+#the order we want our fields to be in is manually set up by this variable
+columns_title = ['subject_id', 'gender', 'age', 'birth_year', 'dod', 'hadm_id', 'admittime', 'dischtime', 'deathtime', 'stay_id', 'first_careunit', 'last_careunit', 'intime', 'outtime', 'los', 'hospital_expire_flag']
+patients_info = rearrange_columns(patients_info, columns_title)
 
 #write a csv summary of all patients
 patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)

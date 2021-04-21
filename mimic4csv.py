@@ -80,15 +80,18 @@ def filter_patients_age(patients_info, min_age=18, max_age=np.inf):
     return patients_info
 
 #function to fix patients with missing the 'deathtime' field, desptie dying in hospital
-#NOTE: currently calculates this by 'admittime' + 'los', alternatively we could 
+#NOTE: currently calculates this by 'intime' + 'los', one can also look at the discharge time, but this seems to be 
+#inaccurate a lot of times
 def fix_missing_deathtimes(patients_info):
     indices = patients_info.index[(patients_info['hospital_expire_flag'] == 1) & (patients_info['deathtime'].isnull())].tolist()
     for index in indices:
-        patients_info.at[index, 'deathtime'] = patients_info.at[index, 'admittime'] + datetime.timedelta(patients_info.at[index, 'los'])
+        patients_info.at[index, 'deathtime'] = patients_info.at[index, 'intime'] + datetime.timedelta(patients_info.at[index, 'los'])
     return patients_info
-#15566609,22132197,2123-04-15 19:52:00,2123-04-21 20:10:00,2123-04-21 20:10:00,EW EMER.,EMERGENCY ROOM,DIED,Medicare,ENGLISH,MARRIED,WHITE,2123-04-15 17:16:00,2123-04-15 20:20:00,1
 
-
+#rearranges columns in the given order
+def rearrange_columns(patients_info, columns_title):
+    patients_info = patients_info.reindex(columns=columns_title)
+    return patients_info
 
 #break up stays by patients
 #creates a folder for each patient and create a file with a summary of their hospital stays 
