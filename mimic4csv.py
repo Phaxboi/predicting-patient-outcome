@@ -107,3 +107,40 @@ def break_up_stays_by_subject(patients_info, output_path):
 
         df = patients_info[patients_info.subject_id == pat_id]
         df.to_csv(os.path.join(directory, 'stays.csv'), index=False)
+
+# Merge patients_info and chartevents.csv. Drop unnecessary columns 
+def merge_stays_chartevents(patients_info, chart):
+    events = patients_info.merge(chart, how='inner', left_on=['subject_id', 'hadm_id', 'stay_id'], right_on=['subject_id', 'hadm_id', 'stay_id'])
+    events = events[['subject_id', 'hadm_id', 'stay_id', 'itemid', 'intime', 'charttime', 'storetime', 'value', 'valueuom']]
+    return events
+
+# samlingsnamn, label, item_id, unitname
+def convert_events_timeserie(events, variables):
+    meta_data = events[['charttime', 'stay_id']].sort_value(by=['charttime', 'stay_id'])\
+                .drop_duplicates(keep='first').set_index('charttime')
+    timeseries = events[['charttime', 'name', 'value']]\
+                .sort_value(by=['charttime', 'name', 'value'], axis=0)\
+                .drop_duplicates(subset=['charttime', 'name',], keep='last')
+    timeseries = timeseries.pivot(index='charttime', columns='name', values='value')\
+                .merge(metadata, left_index=True, rigth_index=True)\
+                .sort_index(axis=0).reset_index()
+    for i in variables:
+        if i not in timeseries:
+            timeseries[i] = np.nan
+    return timeseries
+
+def get_episode(events, stay_id, intime, outtime):
+    idx = (events.stay_id == stay_id)
+    if intime is not None and outtime is not None:
+    return
+
+# # item_id to labels
+# def expand_events_itemid(events, item_id):
+#     events['linksto'] = 'chartevents' 
+#     events = events.merge(item_id, how='inner', left_on=['itemid', 'linksto'], right_on=['itemid', 'linksto'])
+#     return events
+
+# # Calculate hour
+# def intime_to_hours(events):
+#     events['hours'] = events['storetime'] - events['intime'] if event['charttime'].isnull() else events['charttime'] - events['intime']
+#     return events
