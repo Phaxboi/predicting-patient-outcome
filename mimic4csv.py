@@ -106,7 +106,7 @@ def break_up_stays_by_subject(patients_info, output_path):
             pass
 
         df = patients_info[patients_info.subject_id == pat_id]
-        df.to_csv(os.path.join(directory, 'stays.csv'), index=False)
+        df.to_csv(os.path.join(directory, 'patient_info_summary.csv'), index=False)
 
 # Merge patients_info and chartevents.csv. Drop unnecessary columns 
 def merge_stays_chartevents(patients_info, chart):
@@ -144,3 +144,30 @@ def get_episode(events, stay_id, intime, outtime):
 # def intime_to_hours(events):
 #     events['hours'] = events['storetime'] - events['intime'] if event['charttime'].isnull() else events['charttime'] - events['intime']
 #     return events
+
+#converts all weight fields to a unified scale (kg)
+def fix_weight(events):
+    indices = events.index[(events['variable_name'] == 'Weight') & (events['uom'] == 'lbs')]
+    for index in indices:
+        events.at[index, 'Weight'] = events.at[index, 'Weight'] * 0.453592
+        events.at[index, 'uom'] = 'kg'
+    return events
+
+#converts all heights to a unified scale (cm)
+def fix_height(events)
+    indices = events.index[(events['variable_name'] == 'Height') & (events['uom'] == 'Inch')]
+    for index in indices:
+        events.at[index, 'Height'] = events.at[index, 'Height'] * 2.54
+        events.at[index, 'uom'] = 'cm'
+    return events
+
+#converts all temperatures to a unified scale Celsius 
+def fix_temperature(events)
+    indices = events.index[(events['variable_name'] == 'Temperature') & (events['uom'] == 'F')]
+    for index in indices:
+        events.at[index, 'Temperature'] = events.at[index, 'Temperature'] - 32 * (5/9)
+        events.at[index, 'uom'] = 'C'
+    return events
+
+
+    
