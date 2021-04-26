@@ -14,8 +14,9 @@ args = parser.parse_args()
 print(args)
 
 maps = pd.read_csv(os.path.join(args.map_path, 'itemid_to_variable_map.csv'), index_col=None).fillna('')
-#maps.itemid = maps.itemid.astyp(int)
+maps['itemid'] = pd.to_numeric(maps['itemid'])
 maps = maps.set_index('itemid')
+
 variable_map = maps.variable_name.unique()
 
 for subject in tqdm(os.listdir(args.subjects_root_path), desc='Iterating over subjects'):
@@ -38,6 +39,12 @@ for subject in tqdm(os.listdir(args.subjects_root_path), desc='Iterating over su
      
     # Create a event table for each patient.
     events = merge_stays_chartevents(stays, chartevents)
+
+    #Fix 
+    fix_weight(events)
+    fix_height(events)
+    fix_temperature(events)
+
     events.to_csv(os.path.join(args.subjects_root_path, subject, 'events.csv'), index=False)
 
     # Check for valid events for this subject
