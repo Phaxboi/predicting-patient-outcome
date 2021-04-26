@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import numpy as np
 import datetime
-
+from datetime import datetime as dt
 from tqdm import tqdm
 
 
@@ -114,33 +114,54 @@ def merge_stays_chartevents(patients_info, chart):
     events = events[['subject_id', 'hadm_id', 'stay_id', 'itemid', 'intime', 'charttime', 'storetime', 'value', 'valueuom']]
     return events
 
-# samlingsnamn, label, item_id, unitname
+
+# Convert Events table to Timeseries
 def convert_events_timeserie(events, variables):
-    meta_data = events[['charttime', 'stay_id']].sort_value(by=['charttime', 'stay_id'])\
+    meta_data = events[['charttime', 'stay_id']]\
+                .sort_values(by=['charttime', 'stay_id'])\
                 .drop_duplicates(keep='first').set_index('charttime')
-    timeseries = events[['charttime', 'name', 'value']]\
-                .sort_value(by=['charttime', 'name', 'value'], axis=0)\
-                .drop_duplicates(subset=['charttime', 'name',], keep='last')
-    timeseries = timeseries.pivot(index='charttime', columns='name', values='value')\
-                .merge(metadata, left_index=True, rigth_index=True)\
+    timeseries = events[['charttime','variable_name', 'value']]\
+                .sort_values(by=['charttime', 'variable_name', 'value'], axis=0)\
+                .drop_duplicates(subset=['charttime', 'variable_name',], keep='last')
+    timeseries = timeseries.pivot(index='charttime', columns='variable_name', values='value')\
+                .merge(meta_data, left_index=True, right_index=True)\
                 .sort_index(axis=0).reset_index()
     for i in variables:
         if i not in timeseries:
             timeseries[i] = np.nan
     return timeseries
 
-def get_episode(events, stay_id, intime, outtime):
+# Get episodes
+def get_episode(events, stay_id, intime=None, outtime=None):
     idx = (events.stay_id == stay_id)
     if intime is not None and outtime is not None:
-    return
+        idx = idx | ((events.charttime >= intime) & (events.charttime <= outtime))
+    events = events[idx]
+    return events
 
-# # item_id to labels
-# def expand_events_itemid(events, item_id):
-#     events['linksto'] = 'chartevents' 
-#     events = events.merge(item_id, how='inner', left_on=['itemid', 'linksto'], right_on=['itemid', 'linksto'])
-#     return events
+# Calculate hour and output is rounded to every half hour
+def intime_to_hours(episode, intime, remove_charttime=True, remove_stay_id=True):
+    episode = episode.copy()
+    intime = pd.to_datetime(intime)
+    episode['charttime'] = pd.to_datetime(episode.charttime)
+    episode['hours'] = episode['charttime'] - intime
 
-# # Calculate hour
-# def intime_to_hours(events):
-#     events['hours'] = events['storetime'] - events['intime'] if event['charttime'].isnull() else events['charttime'] - events['intime']
-#     return events
+    # Datetime to minutes and then round to nearest half hour. round(x/a)*a where x = hour and a = the factor you want (30 min = 0.5)
+    episode['hours'] = round(episode['hours'].dt.total_seconds() /(60 * 60 * 0.5))*0.5
+    
+    if remove_charttime:
+        del episode['charttime']
+    if remove_stay_id:
+        del episode['stay_id']
+    return episode
+
+# All events that happen in the same half-hour merge into one row. The mean of the values, and last result for Capillary refill rate. NA does not count.
+# NOTE Need to be changed when the labels change 
+def merge_same_hour_to_one_row(episode):
+    episode['Capillary refill rate'] = episode['Capillary refill rate'].groupby('hours', as_index=True, sort=False).last()
+    episode['Diastolic blood pressure'] = pd.to_numeric(episode['Diastolic blood pressure']).groupby('hours', as_index=True, sort=False).mean().round(1)
+    episode['Fraction inspired oxygen'] = pd.to_numeric(episode['Fraction inspired oxygen']).groupby('hours', as_index=True, sort=False).mean().round(1)
+    episode['Glucose'] = pd.to_numeric(episode['Glucose']).groupby('hours', as_index=True, sort=False).mean().round(1)
+    episode['Heart rate'] = pd.to_numeric(episode['Heart rate']).groupby('hours', as_index=True, sort=False).mean().round(1)
+    episode = episode.drop_duplicates()
+    return episode
