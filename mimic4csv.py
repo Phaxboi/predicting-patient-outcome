@@ -118,7 +118,7 @@ def merge_stays_chartevents(patients_info, chart):
 def fix_weight(events):
     indices = events.index[(events['variable_name'] == 'Weight') & (events['uom'] == 'lbs')]
     for index in indices:
-        events.at[index, 'Weight'] = events.at[index, 'Weight'] * 0.453592
+        events.at[index, 'value'] = round(float(events.at[index, 'value']) * 0.453592,1)
         events.at[index, 'uom'] = 'kg'
     return events
 
@@ -126,7 +126,7 @@ def fix_weight(events):
 def fix_height(events):
     indices = events.index[(events['variable_name'] == 'Height') & (events['uom'] == 'Inch')]
     for index in indices:
-        events.at[index, 'Height'] = events.at[index, 'Height'] * 2.54
+        events.at[index, 'value'] = round(float(events.at[index, 'value']) * 2.54,1)
         events.at[index, 'uom'] = 'cm'
     return events
 
@@ -134,7 +134,7 @@ def fix_height(events):
 def fix_temperature(events):
     indices = events.index[(events['variable_name'] == 'Temperature') & (events['uom'] == 'F')]
     for index in indices:
-        events.at[index, 'Temperature'] = events.at[index, 'Temperature'] - 32 * (5/9)
+        events.at[index, 'value'] = round((float(events.at[index, 'value']) - 32) * (5/9),1)
         events.at[index, 'uom'] = 'C'
     return events
 
@@ -199,6 +199,5 @@ def merge_same_hour_to_one_row(episode):
     # episode['Weight'] = pd.to_numeric(episode['Weight']).groupby('hours', as_index=True, sort=False).mean().round(1)
     # episode['pH'] = pd.to_numeric(episode['pH']).groupby('hours', as_index=True, sort=False).mean().round(1)
     # episode = episode.drop_duplicates()
-    print(episode.head(10))
     episode = episode.groupby('hours', as_index=True, sort=False).last()
     return episode

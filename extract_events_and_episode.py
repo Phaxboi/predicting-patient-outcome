@@ -40,11 +40,6 @@ for subject in tqdm(os.listdir(args.subjects_root_path), desc='Iterating over su
     # Create a event table for each patient.
     events = merge_stays_chartevents(stays, chartevents)
 
-    #Fix 
-    fix_weight(events)
-    fix_height(events)
-    fix_temperature(events)
-
     events.to_csv(os.path.join(args.subjects_root_path, subject, 'events.csv'), index=False)
 
     # Check for valid events for this subject
@@ -56,6 +51,15 @@ for subject in tqdm(os.listdir(args.subjects_root_path), desc='Iterating over su
 
     # Merge Event table with item the model look at.
     events = events.merge(maps, left_on='itemid', right_index=True)
+
+    # Convert lb -> kg
+    events = fix_weight(events)
+
+    # Convert inch -> cm 
+    events = fix_height(events)
+
+    # Convert F -> C
+    events = fix_temperature(events)
 
     # Convert event table to a time serie
     timeseries = convert_events_timeserie(events,  variables=variable_map)
