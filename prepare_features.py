@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 
 #name of the columns that needs to be translated to numeric values
-columns_to_translate = ["Capillary refill rate", "Glascow coma scale verbal response", "Glasgow coma scale eye opening", "Glasgow coma scale motor response"]
+columns_to_translate = ["Capillary refill rate", "Glasgow coma scale verbal response", "Glasgow coma scale eye opening", "Glasgow coma scale motor response"]
 
 
 
@@ -22,7 +22,7 @@ columns_to_translate_dictionary = {
         "Normal <3 Seconds": 0,
         "Abnormal >3 Seconds": 1
     },
-    "Glascow coma scale verbal response":{
+    "Glasgow coma scale verbal response":{
         "No Response-ETT": 1,
         "No Response": 1,
         "1 No Response": 1,
@@ -78,23 +78,47 @@ def translate_columns(timeseries):
         timeseries[column_title] = col
     return timeseries
 
-#impute missing values 
-def impute(data_X):
+#impute missing values
+#input: list of episodes(dataframes)
+#output: list of episodes with imputed values 
+def impute(episodes):
     imputer = SimpleImputer(missing_values=np.nan, strategy='mean', verbose=0, copy=False)
-    imputer.fit(data_X)
-    data_X = np.array(imputer.transform(data_X), dtype=np.float32)
-    return(data_X)
+    data_X = []
+    for episode in episodes:
+        data_X = np.concatenate((data_X, episode))
+    imputer.fit(episodes)
+    episodes_imputed = np.array(imputer.transform(episodes), dtype=np.float32)
+    return(episodes_imputed)
 
-#replace non-numerical values for a test file 
-test_df = pd.read_csv(os.path.join(subjects_root_path, '13317644\episode1_timeseries.csv'), index_col=None)
-test_df = translate_columns(test_df)
+
+#TODO itterate over each folder in patient folder, iterate over each episodeX_timeseries.csv files
+#concat to list where each entry is a timeseries
+def read_timeseries(patients_path):
+    
+    return(episodes_list)
+
+#read all episodes
+episodes = read_timeseries(subjects_root_path)
+#impute missing data
+imputed_timeseries_list = impute(episodes)
+#TODO create function to split the 'imputed_timeseries_list' in intervals of 96 lines to re-create 
+#the original episodes
+
+
+# #NOTE test code using one episode, uncomment if needed
+# #replace non-numerical values for a test file 
+# test_df = pd.read_csv(os.path.join(subjects_root_path, '13317644\episode1_timeseries.csv'), index_col=None)
+# test_df = translate_columns(test_df)
 
 #impute values for a test file, and try to reconstruct it
-test_df_list = test_df.values.tolist()
-test_df_list = impute(test_df_list)
-print(test_df_list)
-test_df = pd.DataFrame(test_df_list)
-#test_df = test_df.set_index(0)
+# test_df_list = test_df.values.tolist()
+# test_df_list = impute(test_df_list)
+# print(test_df_list.size)
+# lista = np.concatenate((test_df_list, test_df_list))
+# print(lista.size)
+# test_df = pd.DataFrame(test_df_list)
+# test_df = test_df.set_index(0)
+
+# test_df.to_csv(os.path.join(subjects_root_path, '13317644\episode1_timeseries.csv'), index=False)
 
 
-test_df.to_csv(os.path.join(subjects_root_path, '13317644\episode1_timeseries.csv'), index=False)
