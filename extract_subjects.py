@@ -4,7 +4,7 @@
 import argparse
 import os
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 from mimic4csv import *
 
@@ -68,7 +68,7 @@ patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
 #break up subjects
 #NOTE: will generate a folder and file for each subject which takes ages to delete, so only run
 #this if you really need it
-#break_up_stays_by_subject(patients_info, output_path)
+break_up_stays_by_subject(patients_info, output_path)
 
 
 

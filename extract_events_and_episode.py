@@ -30,7 +30,7 @@ for subject in tqdm(os.listdir(args.subjects_root_path), desc='Iterating over su
     
     try:
         # reading tables of this subject
-        stays = pd.read_csv(os.path.join(args.subjects_root_path, subject, 'stays.csv'), index_col=False)
+        stays = pd.read_csv(os.path.join(args.subjects_root_path, subject, 'patient_info_summary.csv'), index_col=False)
         chartevents = pd.read_csv(os.path.join(args.data_path, 'icu', 'chartevents.csv'))
         item_id = pd.read_csv(os.path.join(args.data_path, 'icu', 'd_items.csv'))
     except:

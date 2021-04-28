@@ -18,7 +18,7 @@ except:
 
 #To run all
 patients = pd.read_csv(os.path.join(args.mimic4_path, 'core', 'patients.csv'))
-pat_idx_arr = patients['subject_id'].sample(n=100)
+pat_idx_arr = patients['subject_id'].sample(n=1000)
 pat_idx = pd.DataFrame()
 pat_idx['subject_id'] = pat_idx_arr
 
