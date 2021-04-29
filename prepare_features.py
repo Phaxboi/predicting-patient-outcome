@@ -93,14 +93,56 @@ def impute(episodes):
 
 #TODO itterate over each folder in patient folder, iterate over each episodeX_timeseries.csv files
 #concat to list where each entry is a timeseries
+#will also write the features to an "episodeX_timeseries_features.csv" file 
 def read_timeseries(patients_path):
-    
+    episodes_list = []
+    for root, dirs, files in os.walk(subjects_root_path):
+        # for dir_name in dirs:
+        #     print(dir_name)
+        episode_counter = 0
+        for file_name in files:
+            if(file_name.startswith('episode') & file_name.endswith('timeseries.csv')):
+                episode = pd.read_csv(os.path.join(root, file_name))
+                #translate string values to numeric values, comment out if dont needed
+                episode = translate_columns(episode)
+                episode_counter += 1
+                episode_48h = extract_48h(episode)
+                file_name = 'episode' + str(episode_counter) + '_timeseries_48h.csv'
+                episode_48h.to_csv(os.path.join(root, file_name), index=False)
+
+
+                print(file_name)
     return(episodes_list)
+
+
+#takes a timeseries dataframe, extract the first 48 hours, pads missing half hours with empty rows
+#NOTE num_of_col needs to set to the amount of variables we use
+def extract_48h(episode):
+    num_variables = 18
+    #make sure we start at hour zero and drop all hours after 48
+    first_index = episode.iloc[0]['hours']
+    episode['hours'] = episode['hours'] - first_index
+
+    #create new df with same column names
+    column_names = episode.columns
+    episode_48h = pd.DataFrame(columns=column_names)
+
+    #give 'hour' column value 0-48 in 0.5 intervals
+    hours = np.array([*range(0, 95)],dtype=float)
+    hours = hours/2
+    episode_48h['hours'] = hours
+
+    #merge with 'episode'
+    episode_48h = episode.merge(episode_48h, how='right', left_on=['hours'], right_on=['hours'])
+    episode_48h = episode_48h.iloc[:,:num_variables]
+    episode_48h.columns = column_names
+
+    return(episode_48h)
 
 #read all episodes
 episodes = read_timeseries(subjects_root_path)
 #impute missing data
-imputed_timeseries_list = impute(episodes)
+#imputed_timeseries_list = impute(episodes)
 #TODO create function to split the 'imputed_timeseries_list' in intervals of 96 lines to re-create 
 #the original episodes
 
