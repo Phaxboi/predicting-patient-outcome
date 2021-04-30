@@ -78,17 +78,36 @@ def translate_columns(timeseries):
         timeseries[column_title] = col
     return timeseries
 
-#impute missing values
-#input: list of episodes(dataframes)
+#impute missing values for all 48h files in the given folder
+#can probably be optimized by utilizing the reading of episode files in 'read_timeseries' instead of 
+#reading here again
+#will also read twice for debug purposes, might be too slow
+#input: root of subject folders
 #output: list of episodes with imputed values 
-def impute(episodes):
+def impute(subjects_root_path):
     imputer = SimpleImputer(missing_values=np.nan, strategy='mean', verbose=0, copy=False)
     data_X = []
-    for episode in episodes:
-        data_X = np.concatenate((data_X, episode))
-    imputer.fit(episodes)
-    episodes_imputed = np.array(imputer.transform(episodes), dtype=np.float32)
-    return(episodes_imputed)
+    for root, dirs, files in os.walk(subjects_root_path):
+        for file_name in files:
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+                episode = pd.read_csv(os.path.join(root, file_name))
+                values = episode.values.tolist()
+                data_X = data_X + values
+    imputer.fit(data_X)
+    column_names = episode.columns
+    for root, dirs, files in os.walk(subjects_root_path):
+        episode_counter = 0
+        for file_name in files:
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+                episode_counter += 1
+                episode = pd.read_csv(os.path.join(root, file_name))
+                values = episode.values.tolist()
+                episode_imputed = np.array(imputer.transform(episode), dtype=np.float32)
+                episode_imputed = pd.DataFrame(episode_imputed)
+                episode_imputed.columns = column_names
+                file_name = 'episode' + str(episode_counter) + '_timeseries_48h.csv'
+                episode_imputed.to_csv(os.path.join(root, file_name), index=False)
+    return(episode_imputed)
 
 
 #TODO itterate over each folder in patient folder, iterate over each episodeX_timeseries.csv files
@@ -109,22 +128,18 @@ def read_timeseries(patients_path):
                 episode_48h = extract_48h(episode)
                 file_name = 'episode' + str(episode_counter) + '_timeseries_48h.csv'
                 episode_48h.to_csv(os.path.join(root, file_name), index=False)
-
-
-                print(file_name)
     return(episodes_list)
 
 
 #takes a timeseries dataframe, extract the first 48 hours, pads missing half hours with empty rows
-#NOTE num_of_col needs to set to the amount of variables we use
 def extract_48h(episode):
-    num_variables = 18
     #make sure we start at hour zero and drop all hours after 48
     first_index = episode.iloc[0]['hours']
     episode['hours'] = episode['hours'] - first_index
 
     #create new df with same column names
     column_names = episode.columns
+    num_variables = column_names.shape[0]
     episode_48h = pd.DataFrame(columns=column_names)
 
     #give 'hour' column value 0-48 in 0.5 intervals
@@ -142,7 +157,7 @@ def extract_48h(episode):
 #read all episodes
 episodes = read_timeseries(subjects_root_path)
 #impute missing data
-#imputed_timeseries_list = impute(episodes)
+imputed_timeseries_list = impute(subjects_root_path)
 #TODO create function to split the 'imputed_timeseries_list' in intervals of 96 lines to re-create 
 #the original episodes
 

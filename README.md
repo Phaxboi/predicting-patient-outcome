@@ -17,7 +17,7 @@ generated with the details of that specific patients stays.
 
 *****EXTRACT EVENTS AND GENERATE EPISODE FILES PER SUBJECTS*****
 
-python -m exctract_events_and_episode --subject_root_path {root directory for generated subject folders} --data_path {path to mimic files} --map_path {directory to item_id to variable mapping}
+python -m extract_events_and_episode --subjects_root_path {root directory for generated subject folders} --data_path {path to mimic files} --map_path {directory to item_id to variable mapping}
 
 This command will extract events for each patient, generate a time series file for each episode and write them as seperate
 files to respective patients folder. The map_path is a mapping from mimics own variable names (item_id) to our own names.
@@ -26,8 +26,9 @@ files to respective patients folder. The map_path is a mapping from mimics own v
 
 *****PREPARE FEATURE DATA AND GENERAL CLEANUP OF THE DATA*****
 
-python -m prepare_features --subject_root_path {root directory for generated subject folders}
+python -m prepare_features --subjects_root_path {root directory for generated subject folders}
 
 Since the time series data for each episode will have different formats for all patients (measurements not done at the same time
 for all patients) we need to do some more work on it before we can generate fefature vectors. This mostly consist of imputing
-missing values. 
+missing values. This module will generate an 'episodeX_timeseries_48h.csv' for each episode, it consists of values every 30 minutes
+of the first 48h for each patient, missing values have been imputed using mean values.
