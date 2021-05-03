@@ -93,11 +93,15 @@ def rearrange_columns(patients_info, columns_title):
     patients_info = patients_info.reindex(columns=columns_title)
     return patients_info
 
+
 #break up stays by patients
-#creates a folder for each patient and create a file with a summary of their hospital stays 
+#creates a folder for each patient and create a file with a summary of their hospital stays
+#also create a file 'mortality_summary' with 'stay_id' and 'hospital_expire_flag'
 def break_up_stays_by_subject(patients_info, output_path):
     patients = patients_info.subject_id.unique()
-    number_of_patients = patients.shape[0]
+    number_of_patients = patients.shape[0] 
+    ids = []
+    mortality = []
     for pat_id in tqdm(patients, total=number_of_patients, desc='Breaking up stays by subjects'):
         directory = os.path.join(output_path, str(pat_id))
         try:
@@ -107,6 +111,10 @@ def break_up_stays_by_subject(patients_info, output_path):
 
         df = patients_info[patients_info.subject_id == pat_id]
         df.to_csv(os.path.join(directory, 'patient_info_summary.csv'), index=False)
+        ids = ids + df['stay_id'].tolist()
+        mortality += df['hospital_expire_flag'].tolist()
+    mortality_summary = pd.DataFrame({'stay_id': ids, 'hospital_expire_flag':mortality})
+    mortality_summary.to_csv(os.path.join(output_path, 'mortality_summary.csv'), index=False)
 
 # Merge patients_info and chartevents.csv. Drop unnecessary columns 
 def merge_stays_chartevents(patients_info, chart):

@@ -83,4 +83,4 @@ for subject in tqdm(os.listdir(args.subjects_root_path), desc='Iterating over su
         columns = list(episode.columns)
         columns_sorted = sorted(columns, key=(lambda x: "" if x =="hours" else x))
         episode = episode[columns_sorted]
-        episode.to_csv(os.path.join(args.subjects_root_path, subject, 'episode{}_timeseries.csv'.format(i+1)), index_label='hours')
+        episode.to_csv(os.path.join(args.subjects_root_path, subject, 'episode{}_'.format(i+1) + str(stay_id) + '_timeseries.csv'), index_label='hours')

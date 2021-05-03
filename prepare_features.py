@@ -4,10 +4,13 @@ import argparse
 import os
 import numpy as np
 import pandas as pd
+import re
 
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
+
+import matplotlib.pyplot as plt
 
 #name of the columns that needs to be translated to numeric values
 columns_to_translate = ["Capillary refill rate", "Glasgow coma scale verbal response", "Glasgow coma scale eye opening", "Glasgow coma scale motor response"]
@@ -79,14 +82,12 @@ def translate_columns(timeseries):
     return timeseries
 
 #impute missing values for all 48h files in the given folder
-#can probably be optimized by utilizing the reading of episode files in 'read_timeseries' instead of 
-#reading here again
-#will also read twice for debug purposes, might be too slow
-#input: root of subject folders
-#output: list of episodes with imputed values 
-def impute(subjects_root_path):
+#also normalizes the data to have zero mean and unit variance
+#NOTE:will also read three times for debug purposes, might be too slow and can probably be done much faster
+def impute_and_scale(subjects_root_path):
     imputer = SimpleImputer(missing_values=np.nan, strategy='mean', verbose=0, copy=False)
     data_X = []
+    #extract the data once to fit the imputer
     for root, dirs, files in os.walk(subjects_root_path):
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
@@ -94,19 +95,56 @@ def impute(subjects_root_path):
                 values = episode.values.tolist()
                 data_X = data_X + values
     imputer.fit(data_X)
+
+
+    debug_data_X = []
+    debug_values = []
+    #Diastolic blood pressure
+
+    data_X = []
     column_names = episode.columns
+    #open each file and impute missing values
     for root, dirs, files in os.walk(subjects_root_path):
         episode_counter = 0
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
                 episode_counter += 1
                 episode = pd.read_csv(os.path.join(root, file_name))
-                values = episode.values.tolist()
+                
                 episode_imputed = np.array(imputer.transform(episode), dtype=np.float32)
                 episode_imputed = pd.DataFrame(episode_imputed)
                 episode_imputed.columns = column_names
-                file_name = 'episode' + str(episode_counter) + '_timeseries_48h.csv'
+
+                #store the imputed values to use with scaler
+                values = episode.values.tolist()
+                data_X = data_X + values
+                
+                subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
+                file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
                 episode_imputed.to_csv(os.path.join(root, file_name), index=False)
+
+    #fit scaler using the imputed
+    scaler = StandardScaler()
+    scaler.fit(data_X)
+
+
+    #open each file and normalizes the data to have zero mean and unit variance
+    for root, dirs, files in os.walk(subjects_root_path):
+        episode_counter = 0
+        for file_name in files:
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+                episode_counter += 1
+                episode = pd.read_csv(os.path.join(root, file_name))
+                
+                episode_normalized = np.array(scaler.transform(episode), dtype=np.float32)
+                episode_normalized = pd.DataFrame(episode_imputed)
+                episode_normalized.columns = column_names
+ 
+                subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
+                file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
+                episode_normalized.to_csv(os.path.join(root, file_name), index=False)
+
+
     return(episode_imputed)
 
 
@@ -116,8 +154,6 @@ def impute(subjects_root_path):
 def read_timeseries(patients_path):
     episodes_list = []
     for root, dirs, files in os.walk(subjects_root_path):
-        # for dir_name in dirs:
-        #     print(dir_name)
         episode_counter = 0
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries.csv')):
@@ -126,7 +162,9 @@ def read_timeseries(patients_path):
                 episode = translate_columns(episode)
                 episode_counter += 1
                 episode_48h = extract_48h(episode)
-                file_name = 'episode' + str(episode_counter) + '_timeseries_48h.csv'
+
+                subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
+                file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
                 episode_48h.to_csv(os.path.join(root, file_name), index=False)
     return(episodes_list)
 
@@ -157,25 +195,12 @@ def extract_48h(episode):
 #read all episodes
 episodes = read_timeseries(subjects_root_path)
 #impute missing data
-imputed_timeseries_list = impute(subjects_root_path)
-#TODO create function to split the 'imputed_timeseries_list' in intervals of 96 lines to re-create 
-#the original episodes
+imputed_timeseries_list = impute_and_scale(subjects_root_path)
 
 
-# #NOTE test code using one episode, uncomment if needed
-# #replace non-numerical values for a test file 
-# test_df = pd.read_csv(os.path.join(subjects_root_path, '13317644\episode1_timeseries.csv'), index_col=None)
-# test_df = translate_columns(test_df)
 
-#impute values for a test file, and try to reconstruct it
-# test_df_list = test_df.values.tolist()
-# test_df_list = impute(test_df_list)
-# print(test_df_list.size)
-# lista = np.concatenate((test_df_list, test_df_list))
-# print(lista.size)
-# test_df = pd.DataFrame(test_df_list)
-# test_df = test_df.set_index(0)
 
-# test_df.to_csv(os.path.join(subjects_root_path, '13317644\episode1_timeseries.csv'), index=False)
+
+
 
 
