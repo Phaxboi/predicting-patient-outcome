@@ -5,6 +5,7 @@ import os
 import numpy as np
 import pandas as pd
 import re
+import statistics
 
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
@@ -66,12 +67,6 @@ columns_to_translate_dictionary = {
 }
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
-args = parser.parse_args()
-
-subjects_root_path = args.subjects_root_path
-
 #can probably be done easier and cleaner
 def translate_columns(timeseries):
     for column_title in columns_to_translate:
@@ -96,10 +91,11 @@ def impute_and_scale(subjects_root_path):
                 data_X = data_X + values
     imputer.fit(data_X)
 
-
-    debug_data_X = []
-    debug_values = []
-    #Diastolic blood pressure
+    #data before imputation
+    debug_lista = [lista[2] for lista in data_X]
+    plt.hist(debug_lista)
+    plt.show()
+    debug_lista = []
 
     data_X = []
     column_names = episode.columns
@@ -116,7 +112,7 @@ def impute_and_scale(subjects_root_path):
                 episode_imputed.columns = column_names
 
                 #store the imputed values to use with scaler
-                values = episode.values.tolist()
+                values = episode_imputed.values.tolist()
                 data_X = data_X + values
                 
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
@@ -127,7 +123,14 @@ def impute_and_scale(subjects_root_path):
     scaler = StandardScaler()
     scaler.fit(data_X)
 
+    #data after imputing
+    print(scaler.get_params())
+    debug_lista = []
+    debug_lista = [lista[2] for lista in data_X]
+    plt.hist(debug_lista)
+    plt.show()
 
+    data_X = []
     #open each file and normalizes the data to have zero mean and unit variance
     for root, dirs, files in os.walk(subjects_root_path):
         episode_counter = 0
@@ -137,20 +140,28 @@ def impute_and_scale(subjects_root_path):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 
                 episode_normalized = np.array(scaler.transform(episode), dtype=np.float32)
-                episode_normalized = pd.DataFrame(episode_imputed)
+                episode_normalized = pd.DataFrame(episode_normalized)
                 episode_normalized.columns = column_names
+
+                #for debugging
+                values = episode_normalized.values.tolist()
+                data_X = data_X + values
  
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
                 episode_normalized.to_csv(os.path.join(root, file_name), index=False)
 
+    #data after normalizing
+    debug_lista = []
+    debug_lista = [lista[2] for lista in data_X]
+    plt.hist(debug_lista)
+    plt.show()
+    print('Variance of col 3 is:' + str(statistics.variance(debug_lista)))
 
     return(episode_imputed)
 
 
-#TODO itterate over each folder in patient folder, iterate over each episodeX_timeseries.csv files
-#concat to list where each entry is a timeseries
-#will also write the features to an "episodeX_timeseries_features.csv" file 
+#read all episodes, transtale text data into numerical values and extract only first 48h
 def read_timeseries(patients_path):
     episodes_list = []
     for root, dirs, files in os.walk(subjects_root_path):
@@ -192,7 +203,15 @@ def extract_48h(episode):
 
     return(episode_48h)
 
-#read all episodes
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
+args = parser.parse_args()
+
+subjects_root_path = args.subjects_root_path
+
+#read all episodes, transtale text data into numerical values and extract only first 48h
 episodes = read_timeseries(subjects_root_path)
 #impute missing data
 imputed_timeseries_list = impute_and_scale(subjects_root_path)
