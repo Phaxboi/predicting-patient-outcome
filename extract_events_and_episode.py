@@ -20,6 +20,10 @@ maps = maps.set_index('itemid')
 
 variable_map = maps.variable_name.unique()
 
+# reading tables
+chartevents = pd.read_csv(os.path.join(args.data_path, 'icu', 'chartevents.csv'))
+item_id = pd.read_csv(os.path.join(args.data_path, 'icu', 'd_items.csv'))
+
 for subject in tqdm(os.listdir(args.subjects_root_path), desc='Iterating over subjects'):
     subject_path = os.path.join(args.subjects_root_path, subject)
     try:
@@ -32,8 +36,6 @@ for subject in tqdm(os.listdir(args.subjects_root_path), desc='Iterating over su
     try:
         # reading tables of this subject
         stays = pd.read_csv(os.path.join(args.subjects_root_path, subject, 'patient_info_summary.csv'), index_col=False)
-        chartevents = pd.read_csv(os.path.join(args.data_path, 'icu', 'chartevents.csv'))
-        item_id = pd.read_csv(os.path.join(args.data_path, 'icu', 'd_items.csv'))
     except:
         sys.stderr.write('Error reading from disk for subject: {}\n'.format(subject))
         continue
