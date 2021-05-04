@@ -26,12 +26,11 @@ except:
 #start reading data from the 'core' folder
 patients = read_patients_table(mimic4_path)
 admissions = read_admissions_table(mimic4_path)
-#transfers = read_transfers_table(mimic4_path)
 
 #read icustays table from the 'ICU' folder
 icustays = read_icustays_table(mimic4_path)
 
-#TODO: exclude cases we don't want
+#exclude cases we don't want
 icustays = filter_icustays_with_transfers(icustays)
 
 #filter icustays less than 48 hours
