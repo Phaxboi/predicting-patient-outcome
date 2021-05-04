@@ -91,11 +91,11 @@ def impute_and_scale(subjects_root_path):
                 data_X = data_X + values
     imputer.fit(data_X)
 
-    #data before imputation
-    debug_lista = [lista[2] for lista in data_X]
-    plt.hist(debug_lista)
-    plt.show()
-    debug_lista = []
+    # #data before imputation
+    # debug_lista = [lista[2] for lista in data_X]
+    # plt.hist(debug_lista)
+    # plt.show()
+    # debug_lista = []
 
     data_X = []
     column_names = episode.columns
@@ -123,12 +123,12 @@ def impute_and_scale(subjects_root_path):
     scaler = StandardScaler()
     scaler.fit(data_X)
 
-    #data after imputing
-    print(scaler.get_params())
-    debug_lista = []
-    debug_lista = [lista[2] for lista in data_X]
-    plt.hist(debug_lista)
-    plt.show()
+    # #data after imputing
+    # print(scaler.get_params())
+    # debug_lista = []
+    # debug_lista = [lista[2] for lista in data_X]
+    # plt.hist(debug_lista)
+    # plt.show()
 
     data_X = []
     #open each file and normalizes the data to have zero mean and unit variance
@@ -151,12 +151,12 @@ def impute_and_scale(subjects_root_path):
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
                 episode_normalized.to_csv(os.path.join(root, file_name), index=False)
 
-    #data after normalizing
-    debug_lista = []
-    debug_lista = [lista[2] for lista in data_X]
-    plt.hist(debug_lista)
-    plt.show()
-    print('Variance of col 3 is:' + str(statistics.variance(debug_lista)))
+    # #data after normalizing
+    # debug_lista = []
+    # debug_lista = [lista[2] for lista in data_X]
+    # plt.hist(debug_lista)
+    # plt.show()
+    # print('Variance of col 3 is:' + str(statistics.variance(debug_lista)))
 
     return(episode_imputed)
 
