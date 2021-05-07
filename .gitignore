@@ -142,3 +142,5 @@ mimic-iv-1.0.zip
 1000_sample_database/ 
 output/ 
 output_debug 
+output_full/ 
+output_debug_5/ 
