@@ -90,12 +90,12 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
-    parser.add_argument('--data_path', type=str, help='Directory containing all MIMIC-IV CSV files.')
-    parser.add_argument('--map_path', type=str, help='Directory to item_id to variable map.')
+    parser.add_argument('--mimic_path', type=str, help='Directory containing all MIMIC-IV CSV files.')
+    #parser.add_argument('--map_path', type=str, help='Directory to item_id to variable map.')
     args = parser.parse_args()
     print(args)
 
-    maps = pd.read_csv(os.path.join(args.map_path, 'itemid_to_variable_map.csv'), index_col=None).fillna('')
+    maps = pd.read_csv(os.path.join( 'itemid_to_variable_map.csv'), index_col=None).fillna('')
     maps['itemid'] = pd.to_numeric(maps['itemid'])
     maps = maps.set_index('itemid')
 
@@ -104,12 +104,12 @@ if __name__ == '__main__':
     # reading tables
     start_time_read_chartevents= time.time()
     
-    chartevents = pd.read_csv(os.path.join(args.data_path, 'icu', 'chartevents.csv'), usecols=['subject_id', 'hadm_id', 'stay_id', 'charttime', 'itemid', 'value', 'warning'], dtype={'subject_id':int, 'hadm_id':int, 'stay_id':int, 'charttime':object, 'itemid': int, 'value':object, 'valuenum':float, 'valueuom':object, 'warning':int})
+    chartevents = pd.read_csv(os.path.join(args.mimic_path, 'icu', 'chartevents.csv'), usecols=['subject_id', 'hadm_id', 'stay_id', 'charttime', 'itemid', 'value', 'warning'], dtype={'subject_id':int, 'hadm_id':int, 'stay_id':int, 'charttime':object, 'itemid': int, 'value':object, 'valuenum':float, 'valueuom':object, 'warning':int})
     
     end_time_read_chartevents = time.time() - start_time_read_chartevents
     print('Time to read chartevents: ' + str(end_time_read_chartevents ))
     
-    item_id = pd.read_csv(os.path.join(args.data_path, 'icu', 'd_items.csv'))
+    item_id = pd.read_csv(os.path.join(args.mimic_path, 'icu', 'd_items.csv'))
 
     #read the summary file and extract a list of all subject_ids that are elevant
     stays_summary = pd.read_csv(os.path.join(args.subjects_root_path, 'stays.csv'), usecols=['subject_id'], dtype={'subject_id':int})

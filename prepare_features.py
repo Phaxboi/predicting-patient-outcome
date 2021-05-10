@@ -1,4 +1,4 @@
-#this files contains various functions in order to create the feature needed for the regression models
+#Various functions used to create the 48h timeseries and prepare the feature data
 
 import argparse
 import os
@@ -10,14 +10,12 @@ import statistics
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
+from tqdm import tqdm
 
 import matplotlib.pyplot as plt
 
 #name of the columns that needs to be translated to numeric values
 columns_to_translate = ["Capillary refill rate", "Glasgow coma scale verbal response", "Glasgow coma scale eye opening", "Glasgow coma scale motor response"]
-
-
-
 
 
 
@@ -77,13 +75,12 @@ def translate_columns(timeseries):
     return timeseries
 
 #impute missing values for all 48h files in the given folder
-#also normalizes the data to have zero mean and unit variance
-#NOTE:will also read three times for debug purposes, might be too slow and can probably be done much faster
-def impute_and_scale(subjects_root_path):
+#NOTE:will read files two times for easier debugging, can proabably be done in one read only
+def translate_and_impute(subjects_root_path):
     imputer = SimpleImputer(missing_values=np.nan, strategy='mean', verbose=0, copy=False)
     data_X = []
     #extract the data once to fit the imputer
-    for root, dirs, files in os.walk(subjects_root_path):
+    for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading timeseries'):
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
                 episode = pd.read_csv(os.path.join(root, file_name))
@@ -91,16 +88,20 @@ def impute_and_scale(subjects_root_path):
                 data_X = data_X + values
     imputer.fit(data_X)
 
-    # #data before imputation
+    #data before imputation
     # debug_lista = [lista[2] for lista in data_X]
-    # plt.hist(debug_lista)
+    # debug_lista_filtered = [item for item in debug_lista if item <300] 
+    # print(max(debug_lista))
+    # print(min(debug_lista))
+    # #print(imputer.get_params())
+    # plt.hist(debug_lista_filtered,density=True, bins=20)
     # plt.show()
     # debug_lista = []
 
     data_X = []
     column_names = episode.columns
     #open each file and impute missing values
-    for root, dirs, files in os.walk(subjects_root_path):
+    for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='imputing'):
         episode_counter = 0
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
@@ -119,44 +120,15 @@ def impute_and_scale(subjects_root_path):
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
                 episode_imputed.to_csv(os.path.join(root, file_name), index=False)
 
-    #fit scaler using the imputed
-    scaler = StandardScaler()
-    scaler.fit(data_X)
 
     # #data after imputing
-    # print(scaler.get_params())
+    # #print(scaler.get_params())
     # debug_lista = []
     # debug_lista = [lista[2] for lista in data_X]
-    # plt.hist(debug_lista)
+    # debug_lista_filtered = []
+    # debug_lista_filtered = [item for item in debug_lista if item <300] 
+    # plt.hist(debug_lista_filtered,density=True, bins=20)
     # plt.show()
-
-    data_X = []
-    #open each file and normalizes the data to have zero mean and unit variance
-    for root, dirs, files in os.walk(subjects_root_path):
-        episode_counter = 0
-        for file_name in files:
-            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
-                episode_counter += 1
-                episode = pd.read_csv(os.path.join(root, file_name))
-                
-                episode_normalized = np.array(scaler.transform(episode), dtype=np.float32)
-                episode_normalized = pd.DataFrame(episode_normalized)
-                episode_normalized.columns = column_names
-
-                #for debugging
-                values = episode_normalized.values.tolist()
-                data_X = data_X + values
- 
-                subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
-                file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
-                episode_normalized.to_csv(os.path.join(root, file_name), index=False)
-
-    # #data after normalizing
-    # debug_lista = []
-    # debug_lista = [lista[2] for lista in data_X]
-    # plt.hist(debug_lista)
-    # plt.show()
-    # print('Variance of col 3 is:' + str(statistics.variance(debug_lista)))
 
     return(episode_imputed)
 
@@ -164,7 +136,7 @@ def impute_and_scale(subjects_root_path):
 #read all episodes, transtale text data into numerical values and extract only first 48h
 def read_timeseries(patients_path):
     episodes_list = []
-    for root, dirs, files in os.walk(subjects_root_path):
+    for root, dirs, files in tqdm(os.walk(patients_path), desc='generating 48h time series'):
         episode_counter = 0
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries.csv')):
@@ -202,24 +174,6 @@ def extract_48h(episode):
     episode_48h.columns = column_names
 
     return(episode_48h)
-
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
-args = parser.parse_args()
-
-subjects_root_path = args.subjects_root_path
-
-#read all episodes, transtale text data into numerical values and extract only first 48h
-episodes = read_timeseries(subjects_root_path)
-#impute missing data
-imputed_timeseries_list = impute_and_scale(subjects_root_path)
-
-
-
-
-
 
 
 

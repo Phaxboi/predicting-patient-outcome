@@ -10,10 +10,10 @@ from mimic4csv import *
 
 #parsing the command to split the data and describing its parameters
 parser = argparse.ArgumentParser(description='Extract per subject data from the MIMIC-IV dataset')
-parser.add_argument('--mimic4_path', type=str, help='Directory containing all MIMIC-IV CSV files.')
+parser.add_argument('--mimic_path', type=str, help='Directory containing all MIMIC-IV CSV files.')
 parser.add_argument('--output_path', type=str, help='Directory to write the per-subject files to.')
 args = parser.parse_args()
-mimic4_path = args.mimic4_path
+mimic_path = args.mimi_path
 output_path = args.output_path
 
 #create output directory
@@ -24,11 +24,11 @@ except:
 
 
 #start reading data from the 'core' folder
-patients = read_patients_table(mimic4_path)
-admissions = read_admissions_table(mimic4_path)
+patients = read_patients_table(mimic_path)
+admissions = read_admissions_table(mimic_path)
 
 #read icustays table from the 'ICU' folder
-icustays = read_icustays_table(mimic4_path)
+icustays = read_icustays_table(mimic_path)
 
 #exclude cases we don't want
 icustays = filter_icustays_with_transfers(icustays)
@@ -67,6 +67,7 @@ patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
 #break up subjects
 #NOTE: will generate a folder and file for each subject which takes ages to delete, so only run
 #this if you really need it
+#patients_info = pd.read_csv(os.path.join(output_path, 'stays.csv'))
 break_up_stays_by_subject(patients_info, output_path)
 
 
