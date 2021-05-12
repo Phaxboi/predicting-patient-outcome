@@ -25,6 +25,10 @@ subjects_root_path = args.subjects_root_path
 
 #read all episodes, transtale text data into numerical values and extract only first 48h
 episodes = read_timeseries(subjects_root_path)
+
+#remove outliers
+rm_outliers_timeseries = remove_outliers_timeseries(subjects_root_path)
+
 #impute missing data
 imputed_timeseries_list = translate_and_impute(subjects_root_path)
 

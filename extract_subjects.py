@@ -13,7 +13,7 @@ parser = argparse.ArgumentParser(description='Extract per subject data from the 
 parser.add_argument('--mimic_path', type=str, help='Directory containing all MIMIC-IV CSV files.')
 parser.add_argument('--output_path', type=str, help='Directory to write the per-subject files to.')
 args = parser.parse_args()
-mimic_path = args.mimi_path
+mimic_path = args.mimic_path
 output_path = args.output_path
 
 #create output directory

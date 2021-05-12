@@ -102,7 +102,7 @@ if __name__ == '__main__':
     variable_map = maps.variable_name.unique()
 
     # reading tables
-    start_time_read_chartevents= time.time()
+    start_time_read_chartevents = time.time()
     
     chartevents = pd.read_csv(os.path.join(args.mimic_path, 'icu', 'chartevents.csv'), usecols=['subject_id', 'hadm_id', 'stay_id', 'charttime', 'itemid', 'value', 'warning'], dtype={'subject_id':int, 'hadm_id':int, 'stay_id':int, 'charttime':object, 'itemid': int, 'value':object, 'valuenum':float, 'valueuom':object, 'warning':int})
     
