@@ -110,6 +110,7 @@ def translate_and_impute(subjects_root_path):
                 
                 episode_imputed = np.array(imputer.transform(episode), dtype=np.float32)
                 episode_imputed = pd.DataFrame(episode_imputed)
+                print(column_names)
                 episode_imputed.columns = column_names
 
                 #store the imputed values to use with scaler
@@ -177,10 +178,11 @@ def extract_48h(episode):
 
 def remove_outliers_timeseries(subjects_root_path):
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading timeseries'):
+        episode_counter = 0
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
-                episode = pd.read_csv(os.path.join(root, file_name))
-
+                episode_counter += 1
+                episode = pd.read_csv(os.path.join(root, file_name),index_col = False)
                 a = np.array(episode['Diastolic blood pressure'].values.tolist())
                 episode['Diastolic blood pressure'] = np.where(a > 120, np.nan, a).tolist()
                 episode['Diastolic blood pressure'] = np.where(a < 30, np.nan, a).tolist()
@@ -228,4 +230,8 @@ def remove_outliers_timeseries(subjects_root_path):
                 a = np.array(episode['pH'].values.tolist())
                 episode['pH'] = np.where(a > 14, np.nan, a).tolist()
                 episode['pH'] = np.where(a < 0, np.nan, a).tolist()
+
+                subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
+                file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
+                episode.to_csv(os.path.join(root, file_name), index=False)
     return episode            
