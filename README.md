@@ -31,7 +31,7 @@ python -m generate_48h_episodes --subjects_root_path {root directory for generat
 Since the time series data for each episode will have different formats for all patients (measurements not done at the same time
 for all patients) we need to do some more work on it before we can generate feature vectors. This mostly consist of imputing
 missing values. This module will generate an 'episodeX_timeseries_48h.csv' for each episode, it consists of values every 30 minutes
-of the first 48h for each patient, missing values have been imputed using mean values.
+of the first 48h for each patient. Outliers have been removed and missing values have been imputed using mean values.
 
 
 *****GENERATE FEATURES AND CREATE A SIMPLE REGRESSIION MODEL*****
