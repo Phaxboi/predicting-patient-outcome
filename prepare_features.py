@@ -8,8 +8,6 @@ import re
 import statistics
 
 from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
 
 import matplotlib.pyplot as plt
@@ -17,6 +15,8 @@ import matplotlib.pyplot as plt
 #name of the columns that needs to be translated to numeric values
 columns_to_translate = ["Capillary refill rate", "Glasgow coma scale verbal response", "Glasgow coma scale eye opening", "Glasgow coma scale motor response"]
 
+#NOTE WARNING SUPRESSION
+pd.options.mode.chained_assignment = None
 
 
 columns_to_translate_dictionary = {
@@ -66,7 +66,8 @@ columns_to_translate_dictionary = {
 
 
 #can probably be done easier and cleaner
-def translate_columns(timeseries):
+def translate_columns(t):
+    timeseries = t
     for column_title in columns_to_translate:
         col = timeseries[column_title]
         for key, value in columns_to_translate_dictionary[column_title].items():
@@ -76,7 +77,7 @@ def translate_columns(timeseries):
 
 #impute missing values for all 48h files in the given folder
 #NOTE:will read files two times for easier debugging, can proabably be done in one read only
-def translate_and_impute(subjects_root_path):
+def impute(subjects_root_path):
     imputer = SimpleImputer(missing_values=np.nan, strategy='mean', verbose=0, copy=False)
     data_X = []
     #extract the data once to fit the imputer
@@ -88,15 +89,7 @@ def translate_and_impute(subjects_root_path):
                 data_X = data_X + values
     imputer.fit(data_X)
 
-    #data before imputation
-    # debug_lista = [lista[2] for lista in data_X]
-    # debug_lista_filtered = [item for item in debug_lista if item <300] 
-    # print(max(debug_lista))
-    # print(min(debug_lista))
-    # #print(imputer.get_params())
-    # plt.hist(debug_lista_filtered,density=True, bins=20)
-    # plt.show()
-    # debug_lista = []
+
 
     data_X = []
     column_names = episode.columns
@@ -121,15 +114,6 @@ def translate_and_impute(subjects_root_path):
                 episode_imputed.to_csv(os.path.join(root, file_name), index=False)
 
 
-    # #data after imputing
-    # #print(scaler.get_params())
-    # debug_lista = []
-    # debug_lista = [lista[2] for lista in data_X]
-    # debug_lista_filtered = []
-    # debug_lista_filtered = [item for item in debug_lista if item <300] 
-    # plt.hist(debug_lista_filtered,density=True, bins=20)
-    # plt.show()
-
     return(episode_imputed)
 
 
@@ -142,9 +126,9 @@ def read_timeseries(patients_path):
             if(file_name.startswith('episode') & file_name.endswith('timeseries.csv')):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 #translate string values to numeric values, comment out if dont needed
-                episode = translate_columns(episode)
-                episode_counter += 1
                 episode_48h = extract_48h(episode)
+                episode_48h = translate_columns(episode_48h)
+                episode_counter += 1
 
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
@@ -158,22 +142,32 @@ def extract_48h(episode):
     first_index = episode.iloc[0]['hours']
     episode['hours'] = episode['hours'] - first_index
 
-    #create new df with same column names
-    column_names = episode.columns
-    num_variables = column_names.shape[0]
-    episode_48h = pd.DataFrame(columns=column_names)
-
-    #give 'hour' column value 0-48 in 0.5 intervals
-    hours = np.array([*range(0, 95)],dtype=float)
-    hours = hours/2
-    episode_48h['hours'] = hours
-
-    #merge with 'episode'
-    episode_48h = episode.merge(episode_48h, how='right', left_on=['hours'], right_on=['hours'])
-    episode_48h = episode_48h.iloc[:,:num_variables]
-    episode_48h.columns = column_names
+    episode_48h = episode[episode.hours <= 48]
 
     return(episode_48h)
 
+#NOTE: OLD FUNCTION TO INPUT EMPTY ROWS AT TIMESTAMPS WHERE NO VALUES WERE MEASURED
+# #takes a timeseries dataframe, extract the first 48 hours, pads missing half hours with empty rows
+# def extract_48h(episode):
+#     #make sure we start at hour zero and drop all hours after 48
+#     first_index = episode.iloc[0]['hours']
+#     episode['hours'] = episode['hours'] - first_index
+
+#     #create new df with same column names
+#     column_names = episode.columns
+#     num_variables = column_names.shape[0]
+#     episode_48h = pd.DataFrame(columns=column_names)
+
+#     #give 'hour' column value 0-48 in 0.5 intervals
+#     hours = np.array([*range(0, 95)],dtype=float)
+#     hours = hours/2
+#     episode_48h['hours'] = hours
+
+#     #merge with 'episode'
+#     episode_48h = episode.merge(episode_48h, how='right', left_on=['hours'], right_on=['hours'])
+#     episode_48h = episode_48h.iloc[:,:num_variables]
+#     episode_48h.columns = column_names
+
+#     return(episode_48h)
 
 

@@ -6,7 +6,7 @@ Modules need to be run in this order to work, can be re-run to re-generate to fi
 
 *****EXTRACTING SUBJECTS THAT FULFILL OUR CRITERIAS*****
 
-python -m extract_subjects --mimic_path {path to mimic files} --output_path {desired output path}
+python -m extract_subjects --mimic_path {path to mimic files} --output_path {desired output path} -generate_small_subset (set this to only generate a small subset (5%) of esubjects)
 
 This command will generate the output folder with a 'stays.csv' file which is a summary of all patients and their stays info.
 Only keeps patients with stays >48h. 
@@ -36,7 +36,5 @@ of the first 48h for each patient, missing values have been imputed using mean v
 
 *****GENERATE FEATURES AND CREATE A SIMPLE REGRESSIION MODEL*****
 
-python -m generate_in_hospital_mortality_regression_model --subjects_root_path {root directory for generated subject folders}
+python -m generate_in_hospital_mortality_regression_model --subjects_root_path {root directory for generated subject folders} -use_generated_features_file (set if you want to use the previously generated features)
 
-This will summarise all the values for each variable tracked (both measured and imputed values) into and array which will then be the feature vector for the model to be trained on.
-The vector is also standardised to have zero mean and unit variance. 
