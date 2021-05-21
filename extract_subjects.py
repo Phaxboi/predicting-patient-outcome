@@ -12,9 +12,11 @@ from mimic4csv import *
 parser = argparse.ArgumentParser(description='Extract per subject data from the MIMIC-IV dataset')
 parser.add_argument('--mimic_path', type=str, help='Directory containing all MIMIC-IV CSV files.')
 parser.add_argument('--output_path', type=str, help='Directory to write the per-subject files to.')
+parser.add_argument('-generate_small_subset', action='store_true', help='Set this if you only want to generate a small 5 percent subject set instead.')
 args = parser.parse_args()
 mimic_path = args.mimic_path
 output_path = args.output_path
+generate_small_subset = args.generate_small_subset
 
 #create output directory
 try:
@@ -61,13 +63,19 @@ fix_missing_deathtimes(patients_info)
 columns_title = ['subject_id', 'gender', 'age', 'birth_year', 'dod', 'hadm_id', 'admittime', 'dischtime', 'deathtime', 'stay_id', 'first_careunit', 'last_careunit', 'intime', 'outtime', 'los', 'hospital_expire_flag']
 patients_info = rearrange_columns(patients_info, columns_title)
 
+
+if generate_small_subset:
+    length = len(patients_info.index)
+    end_index = int(length*0.05)
+    patients_info = patients_info[:end_index]
+
 #write a csv summary of all patients
 patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
 
 #break up subjects
 #NOTE: will generate a folder and file for each subject which takes ages to delete, so only run
 #this if you really need it
-#patients_info = pd.read_csv(os.path.join(output_path, 'stays.csv'))
+patients_info = pd.read_csv(os.path.join(output_path, 'stays.csv'))
 break_up_stays_by_subject(patients_info, output_path)
 
 
