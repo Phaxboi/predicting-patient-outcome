@@ -147,7 +147,6 @@ def extract_48h(episode):
 
     return(episode_48h)
 
-<<<<<<< HEAD
 #NOTE: OLD FUNCTION TO INPUT EMPTY ROWS AT TIMESTAMPS WHERE NO VALUES WERE MEASURED
 # #takes a timeseries dataframe, extract the first 48 hours, pads missing half hours with empty rows
 # def extract_48h(episode):
@@ -171,7 +170,6 @@ def extract_48h(episode):
 #     episode_48h.columns = column_names
 
 #     return(episode_48h)
-=======
 def remove_outliers_timeseries(subjects_root_path):
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading timeseries'):
         episode_counter = 0
@@ -226,7 +224,6 @@ def remove_outliers_timeseries(subjects_root_path):
                 a = np.array(episode['pH'].values.tolist())
                 episode['pH'] = np.where(a > 14, np.nan, a).tolist()
                 episode['pH'] = np.where(a < 0, np.nan, a).tolist()
->>>>>>> 1d2e07eb8648c20924eac0847ef800d027304b28
 
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
