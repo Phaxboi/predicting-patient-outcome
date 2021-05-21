@@ -99,11 +99,9 @@ def impute(subjects_root_path):
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
                 episode_counter += 1
-                episode = pd.read_csv(os.path.join(root, file_name))
-                
+                episode = pd.read_csv(os.path.join(root, file_name))        
                 episode_imputed = np.array(imputer.transform(episode), dtype=np.float32)
                 episode_imputed = pd.DataFrame(episode_imputed)
-                print(column_names)
                 episode_imputed.columns = column_names
 
                 #store the imputed values to use with scaler
@@ -170,118 +168,202 @@ def extract_48h(episode):
 #     episode_48h.columns = column_names
 
 #     return(episode_48h)
-#NOTE OLD
 def remove_outliers_timeseries(subjects_root_path):
+    data_X = []
+    for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading timeseries'):
+        for file_name in files:
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+                episode = pd.read_csv(os.path.join(root, file_name))
+                values = episode.values.tolist()
+                data_X = data_X + values
+    ep = pd.DataFrame(data_X,columns=['hours','Capillary refill rate','Diastolic blood pressure','Fraction inspired oxygen','Glasgow coma scale eye opening','Glasgow coma scale motor response','Glasgow coma scale verbal response','Glucose','Heart rate','Height','Mean blood pressure','Oxygen saturation','Respiratory Rate','Systolic blood pressure','Temperature','Weight','pH'])
+    ep_mean = ep.mean(axis=0, skipna=True)
+    ep_median = ep.median(axis=0, skipna=True)
+    ep_std = ep.std(axis=0, skipna=True)
+    ep_std_median = (ep - ep_median) ** 2
+    print(ep_std_median.sum(axis=0, skipna=True))
+    print(len(ep_std_median))
+    ep_std_median = np.sqrt(ep_std_median.sum(axis=0, skipna=True) / len(ep_std_median))
+    ep_q25 = ep.quantile(q=0.25, axis=0)
+    ep_q75 = ep.quantile(q=0.75, axis=0)
+    ep_iqr = (ep_q75 - ep_q25)*1.5
+    lower = ep_q25 - ep_iqr
+    high = ep_q75 + ep_iqr
+    
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading timeseries'):
         episode_counter = 0
+        scale_factor = 2
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
                 episode_counter += 1
                 episode = pd.read_csv(os.path.join(root, file_name),index_col = False)
+
+                ## Standard deviation with median ##
+                # a = np.array(episode['Diastolic blood pressure'].values.tolist())
+                # episode['Diastolic blood pressure'] = np.where(a > (ep_median['Diastolic blood pressure'] + scale_factor*ep_std_median['Diastolic blood pressure']), np.nan, a).tolist()
+                # episode['Diastolic blood pressure'] = np.where(a < (ep_median['Diastolic blood pressure'] - scale_factor*ep_std_median['Diastolic blood pressure']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Fraction inspired oxygen'].values.tolist())
+                # episode['Fraction inspired oxygen'] = np.where(a > (ep_median['Fraction inspired oxygen'] + scale_factor*ep_std_median['Fraction inspired oxygen']), np.nan, a).tolist()
+                # episode['Fraction inspired oxygen'] = np.where(a < (ep_median['Fraction inspired oxygen'] - scale_factor*ep_std_median['Fraction inspired oxygen']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Glucose'].values.tolist())
+                # episode['Glucose'] = np.where(a > (ep_median['Glucose'] + scale_factor*ep_std_median['Glucose']), np.nan, a).tolist()
+                # episode['Glucose'] = np.where(a < (ep_median['Glucose'] - scale_factor*ep_std_median['Glucose']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Heart rate'].values.tolist())
+                # episode['Heart rate'] = np.where(a > (ep_median['Heart rate'] + scale_factor*ep_std_median['Heart rate']), np.nan, a).tolist()
+                # episode['Heart rate'] = np.where(a < (ep_median['Heart rate'] - scale_factor*ep_std_median['Heart rate']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Height'].values.tolist())
+                # episode['Height'] = np.where(a > (ep_median['Height'] + scale_factor*ep_std_median['Height']), np.nan, a).tolist()
+                # episode['Height'] = np.where(a < (ep_median['Height'] - scale_factor*ep_std_median['Height']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Mean blood pressure'].values.tolist())
+                # episode['Mean blood pressure'] = np.where(a > (ep_median['Mean blood pressure'] + scale_factor*ep_std_median['Mean blood pressure']), np.nan, a).tolist()
+                # episode['Mean blood pressure'] = np.where(a < (ep_median['Mean blood pressure'] - scale_factor*ep_std_median['Mean blood pressure']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Oxygen saturation'].values.tolist())
+                # episode['Oxygen saturation'] = np.where(a > (ep_median['Oxygen saturation'] + scale_factor*ep_std_median['Oxygen saturation']), np.nan, a).tolist()
+                # episode['Oxygen saturation'] = np.where(a < (ep_median['Oxygen saturation'] - scale_factor*ep_std_median['Oxygen saturation']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Respiratory Rate'].values.tolist())
+                # episode['Respiratory Rate'] = np.where(a > (ep_median['Respiratory Rate'] + scale_factor*ep_std_median['Respiratory Rate']), np.nan, a).tolist()
+                # episode['Respiratory Rate'] = np.where(a < (ep_median['Respiratory Rate'] - scale_factor*ep_std_median['Respiratory Rate']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Systolic blood pressure'].values.tolist())
+                # episode['Systolic blood pressure'] = np.where(a > (ep_median['Systolic blood pressure'] + scale_factor*ep_std_median['Systolic blood pressure']), np.nan, a).tolist()
+                # episode['Systolic blood pressure'] = np.where(a < (ep_median['Systolic blood pressure'] - scale_factor*ep_std_median['Systolic blood pressure']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Temperature'].values.tolist())
+                # episode['Temperature'] = np.where(a > (ep_median['Temperature'] + scale_factor*ep_std_median['Temperature']), np.nan, a).tolist()
+                # episode['Temperature'] = np.where(a < (ep_median['Temperature'] - scale_factor*ep_std_median['Temperature']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Weight'].values.tolist())
+                # episode['Weight'] = np.where(a > (ep_median['Weight'] + scale_factor*ep_std_median['Weight']), np.nan, a).tolist()
+                # episode['Weight'] = np.where(a < (ep_median['Weight'] - scale_factor*ep_std_median['Weight']), np.nan, a).tolist()
+                
+                # a = np.array(episode['pH'].values.tolist())
+                # episode['pH'] = np.where(a > (ep_median['pH'] + scale_factor*ep_std_median['pH']), np.nan, a).tolist()
+                # episode['pH'] = np.where(a < (ep_median['pH'] - scale_factor*ep_std_median['pH']), np.nan, a).tolist()
+                
+                ## iqr ##
                 a = np.array(episode['Diastolic blood pressure'].values.tolist())
-                episode['Diastolic blood pressure'] = np.where(a > 120, np.nan, a).tolist()
-                episode['Diastolic blood pressure'] = np.where(a < 30, np.nan, a).tolist()
+                episode['Diastolic blood pressure'] = np.where(a > high['Diastolic blood pressure'], np.nan, a).tolist()
+                episode['Diastolic blood pressure'] = np.where(a < lower['Diastolic blood pressure'], np.nan, a).tolist()
                 
                 a = np.array(episode['Fraction inspired oxygen'].values.tolist())
-                episode['Fraction inspired oxygen'] = np.where(a > 110, np.nan, a).tolist()
-                episode['Fraction inspired oxygen'] = np.where(a < 40, np.nan, a).tolist()
-                
+                episode['Fraction inspired oxygen'] = np.where(a > high['Fraction inspired oxygen'], np.nan, a).tolist()
+                episode['Fraction inspired oxygen'] = np.where(a < lower['Fraction inspired oxygen'], np.nan, a).tolist()
+  
                 a = np.array(episode['Glucose'].values.tolist())
-                episode['Glucose'] = np.where(a > 10, np.nan, a).tolist()
-                episode['Glucose'] = np.where(a < 0, np.nan, a).tolist()
+                episode['Glucose'] = np.where(a > high['Glucose'], np.nan, a).tolist()
+                episode['Glucose'] = np.where(a < lower['Glucose'], np.nan, a).tolist()
                 
                 a = np.array(episode['Heart rate'].values.tolist())
-                episode['Heart rate'] = np.where(a > 220, np.nan, a).tolist()
-                episode['Heart rate'] = np.where(a < 25, np.nan, a).tolist()
+                episode['Heart rate'] = np.where(a > high['Heart rate'], np.nan, a).tolist()
+                episode['Heart rate'] = np.where(a < lower['Heart rate'], np.nan, a).tolist()
                 
                 a = np.array(episode['Height'].values.tolist())
-                episode['Height'] = np.where(a > 220, np.nan, a).tolist()
-                episode['Height'] = np.where(a < 30, np.nan, a).tolist()
+                episode['Height'] = np.where(a > high['Height'], np.nan, a).tolist()
+                episode['Height'] = np.where(a < lower['Height'], np.nan, a).tolist()
                 
                 a = np.array(episode['Mean blood pressure'].values.tolist())
-                episode['Mean blood pressure'] = np.where(a > 220, np.nan, a).tolist()
-                episode['Mean blood pressure'] = np.where(a < 30, np.nan, a).tolist()
+                episode['Mean blood pressure'] = np.where(a > high['Mean blood pressure'], np.nan, a).tolist()
+                episode['Mean blood pressure'] = np.where(a < lower['Mean blood pressure'], np.nan, a).tolist()
                 
                 a = np.array(episode['Oxygen saturation'].values.tolist())
-                episode['Oxygen saturation'] = np.where(a > 220, np.nan, a).tolist()
-                episode['Oxygen saturation'] = np.where(a < 30, np.nan, a).tolist()
-               
-                a = np.array(episode['Respiratory Rate'].values.tolist())
-                episode['Respiratory Rate'] = np.where(a > 220, np.nan, a).tolist()
-                episode['Respiratory Rate'] = np.where(a < 30, np.nan, a).tolist()
+                episode['Oxygen saturation'] = np.where(a > high['Oxygen saturation'], np.nan, a).tolist()
+                episode['Oxygen saturation'] = np.where(a < lower['Oxygen saturation'], np.nan, a).tolist()
                 
+                a = np.array(episode['Respiratory Rate'].values.tolist())
+                episode['Respiratory Rate'] = np.where(a > high['Respiratory Rate'], np.nan, a).tolist()
+                episode['Respiratory Rate'] = np.where(a < lower['Respiratory Rate'], np.nan, a).tolist()
+         
                 a = np.array(episode['Systolic blood pressure'].values.tolist())
-                episode['Systolic blood pressure'] = np.where(a > 220, np.nan, a).tolist()
-                episode['Systolic blood pressure'] = np.where(a < 60, np.nan, a).tolist()
+                episode['Systolic blood pressure'] = np.where(a > high['Systolic blood pressure'], np.nan, a).tolist()
+                episode['Systolic blood pressure'] = np.where(a < lower['Systolic blood pressure'], np.nan, a).tolist()
                 
                 a = np.array(episode['Temperature'].values.tolist())
-                episode['Temperature'] = np.where(a > 220, np.nan, a).tolist()
-                episode['Temperature'] = np.where(a < 60, np.nan, a).tolist()
+                episode['Temperature'] = np.where(a > high['Temperature'], np.nan, a).tolist()
+                episode['Temperature'] = np.where(a < lower['Temperature'], np.nan, a).tolist()
                 
                 a = np.array(episode['Weight'].values.tolist())
-                episode['Weight'] = np.where(a > 220, np.nan, a).tolist()
-                episode['Weight'] = np.where(a < 30, np.nan, a).tolist()
-                
+                episode['Weight'] = np.where(a > high['Weight'], np.nan, a).tolist()
+                episode['Weight'] = np.where(a < lower['Weight'], np.nan, a).tolist()
+         
                 a = np.array(episode['pH'].values.tolist())
-                episode['pH'] = np.where(a > 14, np.nan, a).tolist()
-                episode['pH'] = np.where(a < 0, np.nan, a).tolist()
+                episode['pH'] = np.where(a > high['pH'], np.nan, a).tolist()
+                episode['pH'] = np.where(a < lower['pH'], np.nan, a).tolist()
+
+                ## mean value ##
+                # a = np.array(episode['Diastolic blood pressure'].values.tolist())
+                # episode['Diastolic blood pressure'] = np.where(a > (ep_mean['Diastolic blood pressure'] + scale_factor*ep_std['Diastolic blood pressure']), np.nan, a).tolist()
+                # episode['Diastolic blood pressure'] = np.where(a < (ep_mean['Diastolic blood pressure'] - scale_factor*ep_std['Diastolic blood pressure']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Fraction inspired oxygen'].values.tolist())
+                # episode['Fraction inspired oxygen'] = np.where(a > (ep_mean['Fraction inspired oxygen'] + scale_factor*ep_std['Fraction inspired oxygen']), np.nan, a).tolist()
+                # episode['Fraction inspired oxygen'] = np.where(a < (ep_mean['Fraction inspired oxygen'] - scale_factor*ep_std['Fraction inspired oxygen']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Glucose'].values.tolist())
+                # episode['Glucose'] = np.where(a > (ep_mean['Glucose'] + scale_factor*ep_std['Glucose']), np.nan, a).tolist()
+                # episode['Glucose'] = np.where(a < (ep_mean['Glucose'] - scale_factor*ep_std['Glucose']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Heart rate'].values.tolist())
+                # episode['Heart rate'] = np.where(a > (ep_mean['Heart rate'] + scale_factor*ep_std['Heart rate']), np.nan, a).tolist()
+                # episode['Heart rate'] = np.where(a < (ep_mean['Heart rate'] - scale_factor*ep_std['Heart rate']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Height'].values.tolist())
+                # episode['Height'] = np.where(a > (ep_mean['Height'] + scale_factor*ep_std['Height']), np.nan, a).tolist()
+                # episode['Height'] = np.where(a < (ep_mean['Height'] - scale_factor*ep_std['Height']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Mean blood pressure'].values.tolist())
+                # episode['Mean blood pressure'] = np.where(a > (ep_mean['Mean blood pressure'] + scale_factor*ep_std['Mean blood pressure']), np.nan, a).tolist()
+                # episode['Mean blood pressure'] = np.where(a < (ep_mean['Mean blood pressure'] - scale_factor*ep_std['Mean blood pressure']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Oxygen saturation'].values.tolist())
+                # episode['Oxygen saturation'] = np.where(a > (ep_mean['Oxygen saturation'] + scale_factor*ep_std['Oxygen saturation']), np.nan, a).tolist()
+                # episode['Oxygen saturation'] = np.where(a < (ep_mean['Oxygen saturation'] - scale_factor*ep_std['Oxygen saturation']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Respiratory Rate'].values.tolist())
+                # episode['Respiratory Rate'] = np.where(a > (ep_mean['Respiratory Rate'] + scale_factor*ep_std['Respiratory Rate']), np.nan, a).tolist()
+                # episode['Respiratory Rate'] = np.where(a < (ep_mean['Respiratory Rate'] - scale_factor*ep_std['Respiratory Rate']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Systolic blood pressure'].values.tolist())
+                # episode['Systolic blood pressure'] = np.where(a > (ep_mean['Systolic blood pressure'] + scale_factor*ep_std['Systolic blood pressure']), np.nan, a).tolist()
+                # episode['Systolic blood pressure'] = np.where(a < (ep_mean['Systolic blood pressure'] - scale_factor*ep_std['Systolic blood pressure']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Temperature'].values.tolist())
+                # episode['Temperature'] = np.where(a > (ep_mean['Temperature'] + scale_factor*ep_std['Temperature']), np.nan, a).tolist()
+                # episode['Temperature'] = np.where(a < (ep_mean['Temperature'] - scale_factor*ep_std['Temperature']), np.nan, a).tolist()
+                
+                # a = np.array(episode['Weight'].values.tolist())
+                # episode['Weight'] = np.where(a > (ep_mean['Weight'] + scale_factor*ep_std['Weight']), np.nan, a).tolist()
+                # episode['Weight'] = np.where(a < (ep_mean['Weight'] - scale_factor*ep_std['Weight']), np.nan, a).tolist()
+                
+                # a = np.array(episode['pH'].values.tolist())
+                # episode['pH'] = np.where(a > (ep_mean['pH'] + scale_factor*ep_std['pH']), np.nan, a).tolist()
+                # episode['pH'] = np.where(a < (ep_mean['pH'] - scale_factor*ep_std['pH']), np.nan, a).tolist()
+                
 
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
                 episode.to_csv(os.path.join(root, file_name), index=False)
     return episode            
 
-
-#NOTE: NEW
-def remove_outliers_timeseries_single(episode_single):
-
-    episode = episode_single
-    a = np.array(episode['Diastolic blood pressure'].values.tolist())
-    episode['Diastolic blood pressure'] = np.where(a > 120, np.nan, a).tolist()
-    episode['Diastolic blood pressure'] = np.where(a < 30, np.nan, a).tolist()
-    
-    a = np.array(episode['Fraction inspired oxygen'].values.tolist())
-    episode['Fraction inspired oxygen'] = np.where(a > 110, np.nan, a).tolist()
-    episode['Fraction inspired oxygen'] = np.where(a < 40, np.nan, a).tolist()
-    
-    a = np.array(episode['Glucose'].values.tolist())
-    episode['Glucose'] = np.where(a > 10, np.nan, a).tolist()
-    episode['Glucose'] = np.where(a < 0, np.nan, a).tolist()
-    
-    a = np.array(episode['Heart rate'].values.tolist())
-    episode['Heart rate'] = np.where(a > 220, np.nan, a).tolist()
-    episode['Heart rate'] = np.where(a < 25, np.nan, a).tolist()
-    
-    a = np.array(episode['Height'].values.tolist())
-    episode['Height'] = np.where(a > 220, np.nan, a).tolist()
-    episode['Height'] = np.where(a < 30, np.nan, a).tolist()
-    
-    a = np.array(episode['Mean blood pressure'].values.tolist())
-    episode['Mean blood pressure'] = np.where(a > 220, np.nan, a).tolist()
-    episode['Mean blood pressure'] = np.where(a < 30, np.nan, a).tolist()
-    
-    a = np.array(episode['Oxygen saturation'].values.tolist())
-    episode['Oxygen saturation'] = np.where(a > 220, np.nan, a).tolist()
-    episode['Oxygen saturation'] = np.where(a < 30, np.nan, a).tolist()
-    
-    a = np.array(episode['Respiratory Rate'].values.tolist())
-    episode['Respiratory Rate'] = np.where(a > 220, np.nan, a).tolist()
-    episode['Respiratory Rate'] = np.where(a < 30, np.nan, a).tolist()
-    
-    a = np.array(episode['Systolic blood pressure'].values.tolist())
-    episode['Systolic blood pressure'] = np.where(a > 220, np.nan, a).tolist()
-    episode['Systolic blood pressure'] = np.where(a < 60, np.nan, a).tolist()
-    
-    a = np.array(episode['Temperature'].values.tolist())
-    episode['Temperature'] = np.where(a > 220, np.nan, a).tolist()
-    episode['Temperature'] = np.where(a < 60, np.nan, a).tolist()
-    
-    a = np.array(episode['Weight'].values.tolist())
-    episode['Weight'] = np.where(a > 220, np.nan, a).tolist()
-    episode['Weight'] = np.where(a < 30, np.nan, a).tolist()
-    
-    a = np.array(episode['pH'].values.tolist())
-    episode['pH'] = np.where(a > 14, np.nan, a).tolist()
-    episode['pH'] = np.where(a < 0, np.nan, a).tolist()
-    
-    return episode            
+def plotEpisode(subjects_root_path):
+    data_X = []
+    for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='Plot'):
+        for file_name in files:
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+                episode = pd.read_csv(os.path.join(root, file_name))
+                values = episode.values.tolist()
+                data_X = data_X + values
+    ep = pd.DataFrame(data_X,columns=['hours','Capillary refill rate','Diastolic blood pressure','Fraction inspired oxygen','Glasgow coma scale eye opening','Glasgow coma scale motor response','Glasgow coma scale verbal response','Glucose','Heart rate','Height','Mean blood pressure','Oxygen saturation','Respiratory Rate','Systolic blood pressure','Temperature','Weight','pH'])
+    # print(ep.mean(axis=0, skipna=True))
+    # print(ep.median(axis=0, skipna=True))
+    # print(ep.std(axis=  0, skipna=True))
+    ep.boxplot(column=['Capillary refill rate','Diastolic blood pressure','Fraction inspired oxygen','Glasgow coma scale eye opening','Glasgow coma scale motor response','Glasgow coma scale verbal response','Glucose','Heart rate','Height','Mean blood pressure','Oxygen saturation','Respiratory Rate','Systolic blood pressure','Temperature','Weight','pH'])
+    ep.hist(column=['Capillary refill rate','Diastolic blood pressure','Fraction inspired oxygen','Glasgow coma scale eye opening','Glasgow coma scale motor response','Glasgow coma scale verbal response','Glucose','Heart rate','Height','Mean blood pressure','Oxygen saturation','Respiratory Rate','Systolic blood pressure','Temperature','Weight','pH'],bins=100)
+    plt.show()
+    return ep
