@@ -137,7 +137,7 @@ def read_timeseries(patients_path):
     return(episodes_list)
 
 
-#takes a timeseries dataframe, extract the first 48 hours, pads missing half hours with empty rows
+#takes a timeseries dataframe, extract the first 48 hours
 def extract_48h(episode):
     #make sure we start at hour zero and drop all hours after 48
     first_index = episode.iloc[0]['hours']
@@ -147,7 +147,6 @@ def extract_48h(episode):
 
     return(episode_48h)
 
-<<<<<<< HEAD
 #NOTE: OLD FUNCTION TO INPUT EMPTY ROWS AT TIMESTAMPS WHERE NO VALUES WERE MEASURED
 # #takes a timeseries dataframe, extract the first 48 hours, pads missing half hours with empty rows
 # def extract_48h(episode):
@@ -171,7 +170,7 @@ def extract_48h(episode):
 #     episode_48h.columns = column_names
 
 #     return(episode_48h)
-=======
+#NOTE OLD
 def remove_outliers_timeseries(subjects_root_path):
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading timeseries'):
         episode_counter = 0
@@ -226,9 +225,63 @@ def remove_outliers_timeseries(subjects_root_path):
                 a = np.array(episode['pH'].values.tolist())
                 episode['pH'] = np.where(a > 14, np.nan, a).tolist()
                 episode['pH'] = np.where(a < 0, np.nan, a).tolist()
->>>>>>> 1d2e07eb8648c20924eac0847ef800d027304b28
 
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
                 episode.to_csv(os.path.join(root, file_name), index=False)
+    return episode            
+
+
+#NOTE: NEW
+def remove_outliers_timeseries_single(episode_single):
+
+    episode = episode_single
+    a = np.array(episode['Diastolic blood pressure'].values.tolist())
+    episode['Diastolic blood pressure'] = np.where(a > 120, np.nan, a).tolist()
+    episode['Diastolic blood pressure'] = np.where(a < 30, np.nan, a).tolist()
+    
+    a = np.array(episode['Fraction inspired oxygen'].values.tolist())
+    episode['Fraction inspired oxygen'] = np.where(a > 110, np.nan, a).tolist()
+    episode['Fraction inspired oxygen'] = np.where(a < 40, np.nan, a).tolist()
+    
+    a = np.array(episode['Glucose'].values.tolist())
+    episode['Glucose'] = np.where(a > 10, np.nan, a).tolist()
+    episode['Glucose'] = np.where(a < 0, np.nan, a).tolist()
+    
+    a = np.array(episode['Heart rate'].values.tolist())
+    episode['Heart rate'] = np.where(a > 220, np.nan, a).tolist()
+    episode['Heart rate'] = np.where(a < 25, np.nan, a).tolist()
+    
+    a = np.array(episode['Height'].values.tolist())
+    episode['Height'] = np.where(a > 220, np.nan, a).tolist()
+    episode['Height'] = np.where(a < 30, np.nan, a).tolist()
+    
+    a = np.array(episode['Mean blood pressure'].values.tolist())
+    episode['Mean blood pressure'] = np.where(a > 220, np.nan, a).tolist()
+    episode['Mean blood pressure'] = np.where(a < 30, np.nan, a).tolist()
+    
+    a = np.array(episode['Oxygen saturation'].values.tolist())
+    episode['Oxygen saturation'] = np.where(a > 220, np.nan, a).tolist()
+    episode['Oxygen saturation'] = np.where(a < 30, np.nan, a).tolist()
+    
+    a = np.array(episode['Respiratory Rate'].values.tolist())
+    episode['Respiratory Rate'] = np.where(a > 220, np.nan, a).tolist()
+    episode['Respiratory Rate'] = np.where(a < 30, np.nan, a).tolist()
+    
+    a = np.array(episode['Systolic blood pressure'].values.tolist())
+    episode['Systolic blood pressure'] = np.where(a > 220, np.nan, a).tolist()
+    episode['Systolic blood pressure'] = np.where(a < 60, np.nan, a).tolist()
+    
+    a = np.array(episode['Temperature'].values.tolist())
+    episode['Temperature'] = np.where(a > 220, np.nan, a).tolist()
+    episode['Temperature'] = np.where(a < 60, np.nan, a).tolist()
+    
+    a = np.array(episode['Weight'].values.tolist())
+    episode['Weight'] = np.where(a > 220, np.nan, a).tolist()
+    episode['Weight'] = np.where(a < 30, np.nan, a).tolist()
+    
+    a = np.array(episode['pH'].values.tolist())
+    episode['pH'] = np.where(a > 14, np.nan, a).tolist()
+    episode['pH'] = np.where(a < 0, np.nan, a).tolist()
+    
     return episode            

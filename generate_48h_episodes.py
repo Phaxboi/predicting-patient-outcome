@@ -12,7 +12,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
-from prepare_features import *
+from prepare_features import read_timeseries
+from prepare_features import remove_outliers_timeseries
 
 import matplotlib.pyplot as plt
 

@@ -78,6 +78,18 @@ def scale_values(subjects_root_path):
                 data_X += [np.array(features)]
                 data_Y += [np.array([mortality])]
 
+    #NOTE:code to save min and max values, 16 features total, pH included
+    # values = []
+    # for row in data_X:
+    #     values_row = []
+    #     for i in range(16):
+    #         values_row += [row[(i*42)], row[(i*42+1)] ]
+    #     values += [values_row]
+
+    # df = pd.DataFrame(values)
+    # df.to_csv(os.path.join(subjects_root_path, 'result\\min_max_values.csv'))
+
+
     imputer = SimpleImputer(missing_values=np.nan, strategy='mean', verbose=0, copy=False)
     imputer.fit(data_X)
     data_X = imputer.transform(data_X)

@@ -13,6 +13,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.decomposition import PCA
+from sklearn.ensemble import RandomForestClassifier
 
 import os
 import numpy as np
@@ -62,15 +63,23 @@ def main():
     trainX, testX, trainy, testy = train_test_split(data_X, data_Y, test_size=0.15, random_state=2)
     testy = np.array(testy)
     trainy = np.array(trainy)
-    logreg = LogisticRegression(penalty='l2', C=1)#, random_state=42 #1 seem to be best for whole dataset
-    logreg.fit(trainX, trainy)
-    print(logreg.score(testX, testy))
+    #model = LogisticRegression(penalty='l2', C=0.01)#, random_state=42 #1 seem to be best for whole dataset
+    model = RandomForestClassifier(n_estimators= 1000, random_state= 42)
+    model.fit(trainX, trainy)
+    print('Test accuracy:'+ model.score(testX, testy))
 
 
 
     ns_probs = [0 for _ in range(len(testy))]
-    lr_probs = logreg.predict_proba(testX)
+    lr_probs = model.predict_proba(testX)
     lr_probs = lr_probs[:, 1]
+
+
+    #confusion matrix for training data
+    cm = confusion_matrix(trainy, model.predict(trainX))
+    print(cm)
+    cm_display = ConfusionMatrixDisplay(cm).plot()
+    pyplot.show()
 
     # calculate scores
     ns_auc = roc_auc_score(testy, ns_probs)
@@ -92,18 +101,12 @@ def main():
     # show the plot
     pyplot.show()
 
-    #confusion matrix for training data
-    cm = confusion_matrix(trainy, logreg.predict(trainX))
-    print(cm)
-    cm_display = ConfusionMatrixDisplay(cm).plot()
-    pyplot.show()
-
     # predict probabilities
-    lr_probs = logreg.predict_proba(testX)
+    lr_probs = model.predict_proba(testX)
     # keep probabilities for the positive outcome only
     lr_probs = lr_probs[:, 1]
     # predict class values
-    yhat = logreg.predict(testX)
+    yhat = model.predict(testX)
     lr_precision, lr_recall, _ = precision_recall_curve(testy, lr_probs)
     lr_f1, lr_auc = f1_score(testy, yhat), auc(lr_recall, lr_precision)
     # summarize scores
@@ -126,14 +129,14 @@ def main():
     cm_display = ConfusionMatrixDisplay(cm).plot()
     pyplot.show()
 
-    # print(logreg.predict(trainX))
-    # print(logreg.predict_log_proba(trainX))
-    # print(logreg.predict_proba(trainX))
+    # print(model.predict(trainX))
+    # print(model.predict_log_proba(trainX))
+    # print(model.predict_proba(trainX))
 
     pca = PCA(n_components=2).fit(trainX)
     pca_X = np.array(pca.transform(trainX))
 
-    #probabilities = np.array(logreg.predict_proba(pca_X))
+    #probabilities = np.array(model.predict_proba(pca_X))
     positive_mask = np.array(trainy)
     negative_mask = []
     for label in trainy:
@@ -170,12 +173,12 @@ def main():
     # file_name = 'result_scuffed_model'
 
     # with open(os.path.join(result_dir, 'train_{}.json'.format(file_name)), 'w') as res_file:
-    #         ret = print_metrics_binary(data_Y, logreg.predict_proba(data_X))
+    #         ret = print_metrics_binary(data_Y, model.predict_proba(data_X))
     #         ret = {k : float(v) for k, v in ret.items()}
     #         json.dump(ret, res_file)
 
 
-    # prediction = logreg.predict_proba(data_X_test)[:, 1]
+    # prediction = model.predict_proba(data_X_test)[:, 1]
 
     # with open(os.path.join(result_dir, 'test_{}.json'.format(file_name)), 'w') as res_file:
     #     ret = print_metrics_binary(data_Y_test, prediction)
