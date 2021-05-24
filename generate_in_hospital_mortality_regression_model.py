@@ -63,10 +63,10 @@ def main():
     trainX, testX, trainy, testy = train_test_split(data_X, data_Y, test_size=0.15, random_state=2)
     testy = np.array(testy)
     trainy = np.array(trainy)
-    #model = LogisticRegression(penalty='l2', C=0.01)#, random_state=42 #1 seem to be best for whole dataset
-    model = RandomForestClassifier(n_estimators= 1000, random_state= 42)
+    model = LogisticRegression(penalty='l2', C=0.1)#, random_state=42 #1 seem to be best for whole dataset
+    #model = RandomForestClassifier(n_estimators= 1000, random_state= 42)
     model.fit(trainX, trainy)
-    print('Test accuracy:'+ model.score(testX, testy))
+    print('Test accuracy:'+ str(model.score(testX, testy)))
 
 
 
@@ -77,6 +77,8 @@ def main():
 
     #confusion matrix for training data
     cm = confusion_matrix(trainy, model.predict(trainX))
+    print(cm)
+    cm = confusion_matrix(testy, model.predict(testX))
     print(cm)
     cm_display = ConfusionMatrixDisplay(cm).plot()
     pyplot.show()
@@ -125,9 +127,6 @@ def main():
     # show the plot
     pyplot.show()
     
-    cm = confusion_matrix(testy, yhat)
-    cm_display = ConfusionMatrixDisplay(cm).plot()
-    pyplot.show()
 
     # print(model.predict(trainX))
     # print(model.predict_log_proba(trainX))

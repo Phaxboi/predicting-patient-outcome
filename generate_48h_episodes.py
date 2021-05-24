@@ -33,9 +33,9 @@ episodes = read_timeseries(subjects_root_path)
 #ep = plotEpisode(subjects_root_path)
 
 #remove outliers
-rm_outliers_timeseries = remove_outliers_timeseries(subjects_root_path)
+#rm_outliers_timeseries = remove_outliers_timeseries(subjects_root_path)
 
-ep = plotEpisode(subjects_root_path)
+#ep = plotEpisode(subjects_root_path)
 
 
 

@@ -1,11 +1,13 @@
 #Various functions used to create the 48h timeseries and prepare the feature data
 
-import argparse
 import os
 import numpy as np
+from numpy.core.defchararray import upper
+from numpy.lib.function_base import percentile
 import pandas as pd
 import re
-import statistics
+from pandas.core.reshape.tile import cut
+from get_outlier_thresholds import remove_outliers
 
 from sklearn.impute import SimpleImputer
 from tqdm import tqdm
@@ -118,20 +120,35 @@ def impute(subjects_root_path):
 
 #read all episodes, transtale text data into numerical values and extract only first 48h
 def read_timeseries(patients_path):
+
+    #read all timeseries values, calculate iqr values to filter outliers, will only 
+    thresholds_csv = pd.read_csv(os.path.join(patients_path,'result\\outlier_thresholds.csv'))
+    thresholds = [(a,b) for [a,b] in list(thresholds_csv.values)]
+    
+
     episodes_list = []
+    data_X = []
     for root, dirs, files in tqdm(os.walk(patients_path), desc='generating 48h time series'):
         episode_counter = 0
         for file_name in files:
             if(file_name.startswith('episode') & file_name.endswith('timeseries.csv')):
                 episode = pd.read_csv(os.path.join(root, file_name))
-                #translate string values to numeric values, comment out if dont needed
                 episode_48h = extract_48h(episode)
+                #translate string values to numeric values, comment out if dont needed
                 episode_48h = translate_columns(episode_48h)
                 episode_counter += 1
+
+                episode_48h = remove_outliers(episode_48h, thresholds)
+
+                #data_X += episode_48h.values.tolist()
 
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
                 episode_48h.to_csv(os.path.join(root, file_name), index=False)
+
+    #df = pd.DataFrame(data_X)
+    #df.to_csv(os.path.join(patients_path, 'result\\min_max_values.csv'))
+
     return(episodes_list)
 
 
@@ -144,6 +161,29 @@ def extract_48h(episode):
     episode_48h = episode[episode.hours <= 48]
 
     return(episode_48h)
+
+
+# def remove_outliers(episode_48h, thresholds):
+#     timeseries = episode_48h
+#     i = 0
+#     for (outlier_cutoff_lower, outlier_cutoff_upper) in thresholds:
+#         filtered = []
+#         for x in episode_48h.iloc[:,i+1].tolist():
+#             if np.isnan(x):
+#                 filtered += [np.nan]
+#             elif (outlier_cutoff_lower <= x <= outlier_cutoff_upper):
+#                 filtered += [x]
+#             else:
+#                 filtered += [np.nan]
+
+#         timeseries.iloc[:,i+1] = filtered
+#         i +=1
+#     return(timeseries)
+
+
+
+
+
 
 #NOTE: OLD FUNCTION TO INPUT EMPTY ROWS AT TIMESTAMPS WHERE NO VALUES WERE MEASURED
 # #takes a timeseries dataframe, extract the first 48 hours, pads missing half hours with empty rows

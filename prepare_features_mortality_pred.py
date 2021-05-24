@@ -63,7 +63,7 @@ def scale_values(subjects_root_path):
                 mortality = mortalities.loc[int(stay_id)].hospital_expire_flag
             
                 #drop 'pH' for now since it might be bugged
-                episode.drop(columns=['pH'], axis=1, inplace=True)
+                #episode.drop(columns=['pH'], axis=1, inplace=True)
                 features = []
 
                 hours = episode['hours'].tolist()
@@ -123,7 +123,7 @@ def extract_features(start_stop_percentages, first_value_time, last_value_time, 
                 end_idx = first_value_time + ((last_value_time - first_value_time) * percetage)
             if(case == 1):
                 start_idx = last_value_time - ((last_value_time - first_value_time) * percetage)
-                end_idx = last_value_time 
+                end_idx = last_value_time
 
             #extract all values within the given timeframe
             data = [value for (time, value) in column if (start_idx <= time <= end_idx)]

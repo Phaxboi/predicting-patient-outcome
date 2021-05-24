@@ -23,6 +23,14 @@ This command will extract events for each patient, generate a time series file f
 files to respective patients folder. The map_path is a mapping from mimics own variable names (item_id) to our own names.
 
 
+*****REMOVE OUTLIERS*****
+
+python -m get_outlier_thresholds --subjects_root_path {root directory for generated subject folders}
+
+Will iterate through all episode files and summarise all values, these will be saved as 'subjects_root_path\results\values_summary(no_filtering).csv'.
+Using these values thresholds for filtering outliers wiill then be calculated and saved as 'subjects_root_path\results\outlier_thresholds.csv'.
+Note that this only generates these files, the outlier filtering itself is done in the 'generate_48h_episodes' module. 
+
 
 *****EXTRACT 48H EPISODES AND GENERAL CLEANUP OF THE DATA*****
 
@@ -31,7 +39,7 @@ python -m generate_48h_episodes --subjects_root_path {root directory for generat
 Since the time series data for each episode will have different formats for all patients (measurements not done at the same time
 for all patients) we need to do some more work on it before we can generate feature vectors. This mostly consist of imputing
 missing values. This module will generate an 'episodeX_timeseries_48h.csv' for each episode, it consists of values every 30 minutes
-of the first 48h for each patient. Outliers have been removed and missing values have been imputed using mean values.
+of the first 48h for each patient. Outliers wll be removed according to the 'subjects_root_path\results\outlier_thresholds.csv' file.
 
 
 *****GENERATE FEATURES AND CREATE A SIMPLE REGRESSIION MODEL*****
