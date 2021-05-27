@@ -13,7 +13,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from tqdm import tqdm
 from prepare_features import read_timeseries
-from prepare_features import remove_outliers_timeseries
+from prepare_features import plotEpisode
 
 import matplotlib.pyplot as plt
 
@@ -30,12 +30,7 @@ episodes = read_timeseries(subjects_root_path)
 #imputed_timeseries_list = impute(subjects_root_path)
 
 #plot
-#ep = plotEpisode(subjects_root_path)
-
-#remove outliers
-#rm_outliers_timeseries = remove_outliers_timeseries(subjects_root_path)
-
-#ep = plotEpisode(subjects_root_path)
+ep = plotEpisode(subjects_root_path)
 
 
 
