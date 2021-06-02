@@ -38,17 +38,11 @@ icustays = filter_icustays_with_transfers(icustays)
 #filter icustays less than 48 hours
 icustays = filter_icustays_48h(icustays)
 
-
 #merge per-patient information with per-admission information
 patients_info = merge_patients_admissions(patients, admissions)
 
-#merge per-admission data with transfers
-#patients_info = merge_admissions_transfers(patients_info, transfers)
-
 #merge admission data with icu stay data
 patients_info = merge_admissions_stays(patients_info, icustays)
-
-
 
 #calcualte age of all patients at the time of their stays
 patients_info = add_patient_age(patients_info)
@@ -58,6 +52,7 @@ patients_info = filter_patients_age(patients_info)
 
 #fix patients missing the 'deathtime' value
 fix_missing_deathtimes(patients_info)
+
 
 #the order we want our fields to be in is manually set up by this variable
 columns_title = ['subject_id', 'gender', 'age', 'birth_year', 'dod', 'hadm_id', 'admittime', 'dischtime', 'deathtime', 'stay_id', 'first_careunit', 'last_careunit', 'intime', 'outtime', 'los', 'hospital_expire_flag']
@@ -73,8 +68,7 @@ if generate_small_subset:
 patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
 
 #break up subjects
-#NOTE: will generate a folder and file for each subject which takes ages to delete, so only run
-#this if you really need it
+#NOTE: will generate a folder and file for each subject which takes ages to delete, can be commented if you dont want it for some reason
 patients_info = pd.read_csv(os.path.join(output_path, 'stays.csv'))
 break_up_stays_by_subject(patients_info, output_path)
 

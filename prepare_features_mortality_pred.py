@@ -19,7 +19,7 @@ import re
 import json
 
 
-def extract_features(subjects_root_path):
+def extract_features(subjects_root_path, use_categorical_flag):
     data_X = []
     data_Y = []
     mortalities = pd.read_csv(os.path.join(subjects_root_path, 'mortality_summary.csv'))

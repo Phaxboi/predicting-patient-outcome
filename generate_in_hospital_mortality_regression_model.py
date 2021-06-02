@@ -31,17 +31,24 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
     parser.add_argument('-use_generated_features_file', action='store_true', help='Used to specify if the previously generated features in root/result should be used.')
+    parser.add_argument('-categorical', action='store_true', help='Set this if you want to run the categorical model instead of the numerical.')
     args = parser.parse_args()
 
+    use_categorical_flag = args.categorical
+
     if args.use_generated_features_file:
-        features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features.csv'))
-        outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes.csv'))
+        if use_categorical_flag:
+            features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features_categorical.csv'))
+            outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes_categorical.csv'))
+        else:
+            features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features.csv'))
+            outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes.csv'))
 
         data_X = features.values
         data_Y = outcomes.values
     else:
         #extract features for all patients
-        (data_X, data_Y) = extract_features(args.subjects_root_path)
+        (data_X, data_Y) = extract_features(args.subjects_root_path, use_categorical_flag)
 
         #save X and Y data to 'result' map
         features = pd.DataFrame(data_X)
