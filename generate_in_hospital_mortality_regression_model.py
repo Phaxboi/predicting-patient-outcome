@@ -20,7 +20,6 @@ import numpy as np
 import argparse
 import pandas as pd
 from tqdm import tqdm
-from metrics import *
 from matplotlib import pyplot
 from prepare_features_mortality_pred import *
 
@@ -41,8 +40,8 @@ def main():
         data_X = features.values
         data_Y = outcomes.values
     else:
-        #read all subject folders
-        (data_X, data_Y) = scale_values(args.subjects_root_path)
+        #extract features for all patients
+        (data_X, data_Y) = extract_features(args.subjects_root_path)
 
         #save X and Y data to 'result' map
         features = pd.DataFrame(data_X)

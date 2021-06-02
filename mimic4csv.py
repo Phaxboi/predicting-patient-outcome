@@ -57,10 +57,6 @@ def merge_patients_admissions(patients, admissions):
     patients_info = patients.merge(admissions, how='inner', left_on='subject_id', right_on='subject_id')
     return patients_info
 
-# #merge patient+admission information with transfer information
-# def merge_admissions_transfers(patients_info, transfers):
-#     patients_info = patients_info.merge(transfers, how='inner', left_on=['subject_id', 'hadm_id'], right_on=['subject_id', 'hadm_id'])
-#     return patients_info
 
 #merge with icu stay information
 def merge_admissions_stays(patients_info, icustays):
@@ -190,23 +186,5 @@ def intime_to_hours(episode, intime, remove_charttime=True, remove_stay_id=True)
 # All events that happen in the same half-hour merge into one row. The mean of the values, and last result for Capillary refill rate. NA does not count.
 # NOTE Need to be changed when the labels change. These are comments right now.
 def merge_same_hour_to_one_row(episode):
-    # episode['Capillary refill rate'] = episode['Capillary refill rate'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Diastolic blood pressure'] = pd.to_numeric(episode['Diastolic blood pressure']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Fraction inspired oxygen'] = pd.to_numeric(episode['Fraction inspired oxygen']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Glasgow coma scale eye opening'] = episode['Glasgow coma scale eye opening'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Glasgow coma scale motor response'] = episode['Glasgow coma scale motor response'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Glascow coma scale verbal response'] = episode['Glascow coma scale verbal response'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Glasgow coma scale total'] = episode['Glasgow coma scale total'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Glucose'] = pd.to_numeric(episode['Glucose']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Heart rate'] = pd.to_numeric(episode['Heart rate']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Height'] = pd.to_numeric(episode['Height']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Mean blood pressure'] = pd.to_numeric(episode['Mean blood pressure']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Oxygen saturation'] = pd.to_numeric(episode['Oxygen saturation']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Respiratory Rate'] = pd.to_numeric(episode['Respiratory Rate']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Systolic blood pressure'] = pd.to_numeric(episode['Systolic blood pressure']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Temperature'] = pd.to_numeric(episode['Temperature']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Weight'] = pd.to_numeric(episode['Weight']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['pH'] = pd.to_numeric(episode['pH']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode = episode.drop_duplicates()
     episode = episode.groupby('hours', as_index=True, sort=False).last()
     return episode

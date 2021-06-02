@@ -1,5 +1,4 @@
 import argparse
-from get_outlier_thresholds import main
 import os
 from unicodedata import category
 import pandas as pd
