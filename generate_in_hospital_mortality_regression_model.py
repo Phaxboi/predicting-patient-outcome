@@ -41,8 +41,8 @@ def main():
             features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features_categorical.csv'))
             outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes_categorical.csv'))
         else:
-            features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features.csv'))
-            outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes.csv'))
+            features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features_numerical.csv'))
+            outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes_numerical.csv'))
 
         data_X = features.values
         data_Y = outcomes.values
@@ -50,14 +50,19 @@ def main():
         #extract features for all patients
         (data_X, data_Y) = extract_features(args.subjects_root_path, use_categorical_flag)
 
+        if(use_categorical_flag):
+            features_file_name = 'features_categorical.csv'
+            outcomes_file_name = 'outcomes_categorical.csv'
+        else:
+            features_file_name = 'features_numerical.csv'
+            outcomes_file_name = 'outcomes_numerical.csv'
+
         #save X and Y data to 'result' map
         features = pd.DataFrame(data_X)
-        file_name = 'features.csv'
-        features.to_csv(os.path.join(args.subjects_root_path, 'result\\', file_name), index=False)
+        features.to_csv(os.path.join(args.subjects_root_path, 'result\\', features_file_name), index=False)
 
         outcomes = pd.DataFrame(data_Y)
-        file_name = 'outcomes.csv'
-        outcomes.to_csv(os.path.join(args.subjects_root_path, 'result\\', file_name), index=False)
+        outcomes.to_csv(os.path.join(args.subjects_root_path, 'result\\', outcomes_file_name), index=False)
 
         #read all subjects folders and save a summary file
         #(data_X, data_Y) = scale_values_alt(args.subjects_root_path)

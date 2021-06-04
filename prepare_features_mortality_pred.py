@@ -13,10 +13,9 @@ import pandas as pd
 from tqdm import tqdm
 from scipy.stats import skew
 
-import matplotlib.pyplot as plt
-
 import re
-import json
+
+
 
 
 def extract_features(subjects_root_path, use_categorical_flag):
@@ -25,7 +24,8 @@ def extract_features(subjects_root_path, use_categorical_flag):
     mortalities = pd.read_csv(os.path.join(subjects_root_path, 'mortality_summary.csv'))
     mortalities.set_index('stay_id',inplace=True, drop=True)
 
-
+    check_filename_function = check_filename(use_categorical_flag)
+    get_stay_id = get_stay_id_function(use_categorical_flag)
     
     #NEW FEATURES
     start_stop_percentages = [(0,1), (0,0.1), (0,0.25), (0,0.5), (1,0.9), (1, 0.75), (1, 0.5)]
@@ -34,12 +34,15 @@ def extract_features(subjects_root_path, use_categorical_flag):
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading values'):
         for file_name in files:
             #if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
-            if(file_name.startswith('num_category')):
+            #if(file_name.startswith('num_category')):
+            #read only desiered files
+            if(check_filename_function(file_name)):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 #for 48h
                 #stay_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 #for categorical
-                stay_id = re.search('.*_(\d*).*', file_name).group(1)
+                #stay_id = re.search('.*_(\d*).*', file_name).group(1)
+                stay_id = get_stay_id(file_name)
                 mortality = mortalities.loc[int(stay_id)].hospital_expire_flag
             
                 features = []
@@ -132,6 +135,44 @@ def convert_timeseries_to_dict(episode, hours):
         dictionary += [col_dict]
 
     return(dictionary)
+
+
+
+def check_filename(use_categorical_flag):
+    if(use_categorical_flag):
+        func = check_filename_categorical
+    else:
+        func = check_filename_numerical
+    return(func)
+
+def check_filename_categorical(filename):
+    return (filename.startswith('num_category'))
+
+def check_filename_numerical(filename):
+    return (filename.startswith('episode') & filename.endswith('timeseries_48h.csv'))
+
+
+
+
+def get_stay_id_function(use_categorical_flag):
+    if(use_categorical_flag):
+        func = get_stay_id_categorical
+    else:
+        func = get_stay_id_numerical
+    return(func)
+
+def get_stay_id_categorical(filename):
+    return(re.search('.*_(\d*).*', filename).group(1))
+
+def get_stay_id_numerical(filename):
+    return(re.search('.*_(\d*)_.*', filename).group(1))
+                
+
+
+
+
+
+
 
 
 

@@ -15,6 +15,14 @@ It will then generate one folder per patient, named using their subject id. Ther
 generated with the details of that specific patients stays.
 
 
+*****DOWNSIZE CHARTEVENTS FILE*****
+
+python -m filter_chartevents --subjects_root_path {root directory for generated subject folders} --mimic_path {path to mimic files}
+
+This command will significantly downsize the chartevents.csv file from 29Gb to 17GB. This will greatly speed up the following tasks.
+NOTE: After it has been run it will create a 'chartevents_filtered.csv' at 'mimic_path\ which you then need to rename to 'chartevents.csv' if you want to use it. 
+
+
 *****EXTRACT EVENTS AND GENERATE EPISODE FILES PER SUBJECTS*****
 
 python -m extract_events_and_episode --subjects_root_path {root directory for generated subject folders} --mimic_path {path to mimic files}
@@ -44,5 +52,6 @@ of the first 48h for each patient. Outliers wll be removed according to the 'sub
 
 *****GENERATE FEATURES AND CREATE A SIMPLE REGRESSIION MODEL*****
 
-python -m generate_in_hospital_mortality_regression_model --subjects_root_path {root directory for generated subject folders} -use_generated_features_file (set if you want to use the previously generated features)
+python -m generate_in_hospital_mortality_regression_model --subjects_root_path {root directory for generated subject folders} -use_generated_features_file (set if you want to use the previously generated features) -categorical {Set this if you want to run the categorical model instead of the numerical}
 
+Will write the features and outcomes to results\features_X.csv and results\outcomes_X.csv where X is either 'numerical' or 'categorical' depending on the -categorical flag. 
