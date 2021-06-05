@@ -232,12 +232,18 @@ def remove_cat_values(category):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
+    parser.add_argument('-half_hour', action='store_true', help='Set this if you want to generate time series 48h with half hours interval.')
     args = parser.parse_args()
+
     subjects_root_path = args.subjects_root_path
+    if args.half_hour:
+        fileendswith = '_half_hour.csv'
+    else:
+        fileendswith = '.csv'
 
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='Category'):
         for file_name in files:
-            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h' + fileendswith)):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 category = pd.DataFrame()
                 category['hours'] = episode['hours']
@@ -259,11 +265,11 @@ def main():
                 category = add_category_ph(episode, category)
 
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
-                file_name = 'category' + '_' + str(subj_id) + '.csv'
+                file_name = 'category' + '_' + str(subj_id) + fileendswith
                 category.to_csv(os.path.join(root, file_name), index=False)
 
                 category = remove_cat_values(category)
-                file_name = 'num_category' + '_' + str(subj_id) + '.csv'
+                file_name = 'num_category' + '_' + str(subj_id) + fileendswith
                 category.to_csv(os.path.join(root, file_name), index=False)
 
 if __name__ == '__main__':

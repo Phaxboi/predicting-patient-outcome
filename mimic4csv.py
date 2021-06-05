@@ -168,14 +168,18 @@ def get_episode(events, stay_id, intime=None, outtime=None):
     return events
 
 # Calculate hour and output is rounded to every half hour
-def intime_to_hours(episode, intime, remove_charttime=True, remove_stay_id=True):
+def intime_to_hours(episode, intime, half_hour, remove_charttime=True, remove_stay_id=True):
     episode = episode.copy()
     intime = pd.to_datetime(intime)
     episode['charttime'] = pd.to_datetime(episode.charttime)
     episode['hours'] = episode['charttime'] - intime
 
-    # Datetime to minutes and then round to nearest half hour. round(x/a)*a where x = hour and a = the factor you want (30 min = 0.5)
-    episode['hours'] = round(episode['hours'].dt.total_seconds() /(60 * 60 * 0.5))*0.5
+    if half_hour:
+        # Datetime to minutes and then round to nearest half hour. round(x/a)*a where x = hour and a = the factor you want (30 min = 0.5)
+        episode['hours'] = round(episode['hours'].dt.total_seconds() /(60 * 60 * 0.5))*0.5
+    else:
+        # Datetime to hours
+        episode['hours'] = episode['hours'].dt.total_seconds() /(60*60)
     
     if remove_charttime:
         del episode['charttime']
@@ -183,8 +187,7 @@ def intime_to_hours(episode, intime, remove_charttime=True, remove_stay_id=True)
         del episode['stay_id']
     return episode
 
-# All events that happen in the same half-hour merge into one row. The mean of the values, and last result for Capillary refill rate. NA does not count.
-# NOTE Need to be changed when the labels change. These are comments right now.
+# All events that happen in the same half-hour merge into one row. If there is more than one value for one parameter, it will take the latest value.
 def merge_same_hour_to_one_row(episode):
     episode = episode.groupby('hours', as_index=True, sort=False).last()
     return episode

@@ -20,17 +20,22 @@ import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
+parser.add_argument('-half_hour', action='store_true', help='Set this if you want to generate time series 48h with half hours interval.')
 args = parser.parse_args()
 
 subjects_root_path = args.subjects_root_path
+if args.half_hour:
+    fileendswith = '_half_hour.csv'
+else:
+    fileendswith = '.csv'
 
 #read all episodes, transtale text data into numerical values and extract only first 48h
-episodes = read_timeseries(subjects_root_path)
+episodes = read_timeseries(subjects_root_path, fileendswith)
 #impute missing data NOTE: this is probably a bad idea, we should probably just leave this commented and not run it
 #imputed_timeseries_list = impute(subjects_root_path)
 
 #plot
-ep = plotEpisode(subjects_root_path)
+ep = plotEpisode(subjects_root_path, fileendswith)
 
 
 

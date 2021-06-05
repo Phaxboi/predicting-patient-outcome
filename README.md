@@ -23,17 +23,23 @@ This command will significantly downsize the chartevents.csv file from 29Gb to 1
 NOTE: After it has been run it will create a 'chartevents_filtered.csv' at 'mimic_path\ which you then need to rename to 'chartevents.csv' if you want to use it. 
 
 
-*****EXTRACT EVENTS AND GENERATE EPISODE FILES PER SUBJECTS*****
+*****CREATE A EVENT FILE PER SUBJECTS*****
 
-python -m extract_events_and_episode --subjects_root_path {root directory for generated subject folders} --mimic_path {path to mimic files}
+python -m create_events --subjects_root_path {root directory for generated subject folders} --mimic_path {path to mimic files}
 
-This command will extract events for each patient, generate a time series file for each episode and write them as seperate
-files to respective patients folder. The map_path is a mapping from mimics own variable names (item_id) to our own names.
+This command will extract a event file for each patient, and write the file to respective patients folder.
 
+
+*****CREATE EPISODES FILES PER SUBJECTS*****
+
+python -m create_time_series --subjects_root_path {root directory for generated subject folders} --mimic_path {path to mimic files} -half_hour (if you want to round all events to the nearest half-hour)
+
+This command will create all episodes files for each patient, generate a time series file for each episode and write them as seperate
+files to respective patients folder.
 
 *****REMOVE OUTLIERS*****
 
-python -m get_outlier_thresholds --subjects_root_path {root directory for generated subject folders}
+python -m get_outlier_thresholds --subjects_root_path {root directory for generated subject folders} -half_hour (Set if you want to calculate the outliers with half hours interval.)
 
 Will iterate through all episode files and summarise all values, these will be saved as 'subjects_root_path\results\values_summary(no_filtering).csv'.
 Using these values thresholds for filtering outliers wiill then be calculated and saved as 'subjects_root_path\results\outlier_thresholds.csv'.
@@ -42,7 +48,7 @@ Note that this only generates these files, the outlier filtering itself is done 
 
 *****EXTRACT 48H EPISODES AND GENERAL CLEANUP OF THE DATA*****
 
-python -m generate_48h_episodes --subjects_root_path {root directory for generated subject folders}
+python -m generate_48h_episodes --subjects_root_path {root directory for generated subject folders} -half_hour (Set if you want to extract 48h on half hours.)
 
 Since the time series data for each episode will have different formats for all patients (measurements not done at the same time
 for all patients) we need to do some more work on it before we can generate feature vectors. This mostly consist of imputing
