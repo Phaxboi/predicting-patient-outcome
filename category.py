@@ -264,12 +264,12 @@ def main():
                 category = add_category_weight(episode, category)
                 category = add_category_ph(episode, category)
 
-                subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
-                file_name = 'category' + '_' + str(subj_id) + fileendswith
+                stay_id = re.search('.*_(\d*)_.*', file_name).group(1)
+                file_name = 'category' + '_' + str(stay_id) + fileendswith
                 category.to_csv(os.path.join(root, file_name), index=False)
 
                 category = remove_cat_values(category)
-                file_name = 'num_category' + '_' + str(subj_id) + fileendswith
+                file_name = 'num_category' + '_' + str(stay_id) + fileendswith
                 category.to_csv(os.path.join(root, file_name), index=False)
 
 if __name__ == '__main__':
