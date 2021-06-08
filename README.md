@@ -41,8 +41,8 @@ files to respective patients folder.
 
 python -m get_outlier_thresholds --subjects_root_path {root directory for generated subject folders} -half_hour (Set if you want to calculate the outliers with half hours interval.)
 
-Will iterate through all episode files and summarise all values, these will be saved as 'subjects_root_path\results\values_summary(no_filtering).csv'.
-Using these values thresholds for filtering outliers wiill then be calculated and saved as 'subjects_root_path\results\outlier_thresholds.csv'.
+Will iterate through all episode files and summarise all values, these will be saved as 'subjects_root_path\result\values_summary(no_filtering).csv'.
+Using these values thresholds for filtering outliers wiill then be calculated and saved as 'subjects_root_path\result\outlier_thresholds.csv'.
 Note that this only generates these files, the outlier filtering itself is done in the 'generate_48h_episodes' module. 
 
 
