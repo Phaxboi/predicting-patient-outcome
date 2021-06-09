@@ -21,6 +21,7 @@ generate_small_subset = args.generate_small_subset
 #create output directory
 try:
     os.makedirs(output_path)
+    os.makedirs(output_path + '\\result')
 except:
     pass
 
