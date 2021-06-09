@@ -20,7 +20,7 @@ generated with the details of that specific patients stays.
 python -m filter_chartevents --subjects_root_path {root directory for generated subject folders} --mimic_path {path to mimic files}
 
 This command will significantly downsize the chartevents.csv file from 29Gb to 17GB. This will greatly speed up the following tasks.
-NOTE: After it has been run it will create a 'chartevents_filtered.csv' at 'mimic_path\ which you then need to rename to 'chartevents.csv' if you want to use it. 
+***NOTE:*** After it has been run it will create a 'chartevents_filtered.csv' at 'mimic_path\ which you then need to rename to 'chartevents.csv' if you want to use it. 
 
 
 *****CREATE A EVENT FILE PER SUBJECTS*****
