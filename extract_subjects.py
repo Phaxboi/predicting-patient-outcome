@@ -18,7 +18,7 @@ mimic_path = args.mimic_path
 output_path = args.output_path
 generate_small_subset = args.generate_small_subset
 
-#create output directory
+#create output directory and the subfolder result
 try:
     os.makedirs(output_path)
     os.makedirs(output_path + '\\result')

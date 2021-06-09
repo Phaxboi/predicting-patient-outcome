@@ -17,36 +17,36 @@ def create_episode(patient_id):
         sys.stderr.write('Error, when trying to read the following: {}\n'.format(patient_id))
         return()
 
-    # Merge Event table with item the model look at.
+    #merge Event table with item the model look at.
     events = events.merge(maps, left_on='itemid', right_index=True)
 
-    # Convert lb -> kg
+    #convert lb -> kg
     events = fix_weight(events)
 
-    # Convert inch -> cm 
+    #convert inch -> cm 
     events = fix_height(events)
 
-    # Convert F -> C
+    #convert F -> C
     events = fix_temperature(events)
 
 
-    # Convert event table to a time serie
+    #convert event table to a time serie
     timeseries = convert_events_timeserie(events,  variables=variable_map)
 
 
-    # Extracting separate episodes
+    #extracting separate episodes
     for i in range(patient_summary.shape[0]):
         stay_id = patient_summary.stay_id.iloc[i]
         intime = patient_summary.intime.iloc[i]
         outtime = patient_summary.outtime.iloc[i]
 
-        # Get all episodes
+        #get all episodes
         episode = get_episode(timeseries, stay_id, intime, outtime)
 
-        # Change time to hours, count from intime = 0 
+        #change time to hours, count from intime = 0 
         episode = intime_to_hours(episode, intime, half_hour).set_index('hours').sort_index(axis=0)
         if half_hour:
-            # All events that happen in the same half-hour merge into one row
+            #all events that happen in the same half-hour merge into one row
             episode = merge_same_hour_to_one_row(episode)
 
         columns = list(episode.columns)

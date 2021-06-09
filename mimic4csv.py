@@ -94,6 +94,7 @@ def rearrange_columns(patients_info, columns_title):
 #creates a folder for each patient and create a file with a summary of their hospital stays
 #also create a file 'mortality_summary' with 'stay_id' and 'hospital_expire_flag'
 def break_up_stays_by_subject(patients_info, output_path):
+    #NOTE: Kan man ta bort rad 98 (raden under)?
     result_path = os.path.join(output_path, 'result')
     patients = patients_info.subject_id.unique()
     number_of_patients = patients.shape[0] 
@@ -113,7 +114,8 @@ def break_up_stays_by_subject(patients_info, output_path):
     mortality_summary = pd.DataFrame({'stay_id': ids, 'hospital_expire_flag':mortality})
     mortality_summary.to_csv(os.path.join(output_path, 'mortality_summary.csv'), index=False)
 
-# Merge patients_info and chartevents.csv. Drop unnecessary columns 
+#merge patients_info and chartevents.csv
+#and drop unnecessary columns 
 def merge_stays_chartevents(patients_info, chart):
     events = patients_info.merge(chart, how='inner', left_on=['subject_id', 'hadm_id', 'stay_id'], right_on=['subject_id', 'hadm_id', 'stay_id'])
     events = events[['subject_id', 'hadm_id', 'stay_id', 'itemid', 'intime', 'charttime', 'storetime', 'value', 'valueuom']]
@@ -127,7 +129,7 @@ def fix_weight(events):
         events.at[index, 'uom'] = 'kg'
     return events
 
-# Converts all heights to a unified scale (cm)
+#converts all heights to a unified scale (cm)
 def fix_height(events):
     indices = events.index[(events['variable_name'] == 'Height') & (events['uom'] == 'Inch')]
     for index in indices:
@@ -135,7 +137,7 @@ def fix_height(events):
         events.at[index, 'uom'] = 'cm'
     return events
 
-# Converts all temperatures to a unified scale Celsius 
+#converts all temperatures to a unified scale Celsius 
 def fix_temperature(events):
     indices = events.index[(events['variable_name'] == 'Temperature') & (events['uom'] == 'F')]
     for index in indices:
@@ -143,7 +145,7 @@ def fix_temperature(events):
         events.at[index, 'uom'] = 'C'
     return events
 
-# Convert Events table to Timeseries
+#convert Events table to Timeseries
 def convert_events_timeserie(events, variables):
     meta_data = events[['charttime', 'stay_id']]\
                 .sort_values(by=['charttime', 'stay_id'])\
@@ -159,7 +161,7 @@ def convert_events_timeserie(events, variables):
             timeseries[i] = np.nan
     return timeseries
 
-# Get episodes
+#get episodes
 def get_episode(events, stay_id, intime=None, outtime=None):
     idx = (events.stay_id == stay_id)
     if intime is not None and outtime is not None:
@@ -167,7 +169,7 @@ def get_episode(events, stay_id, intime=None, outtime=None):
     events = events[idx]
     return events
 
-# Calculate hour and output is rounded to every half hour
+#calculate hour and output is rounded to every half hour
 def intime_to_hours(episode, intime, half_hour, remove_charttime=True, remove_stay_id=True):
     episode = episode.copy()
     intime = pd.to_datetime(intime)
@@ -175,10 +177,10 @@ def intime_to_hours(episode, intime, half_hour, remove_charttime=True, remove_st
     episode['hours'] = episode['charttime'] - intime
 
     if half_hour:
-        # Datetime to minutes and then round to nearest half hour. round(x/a)*a where x = hour and a = the factor you want (30 min = 0.5)
+        #datetime convert to minutes and then round to nearest half hour. round(x/a)*a where x = hour and a = the factor you want (30 min = 0.5)
         episode['hours'] = round(episode['hours'].dt.total_seconds() /(60 * 60 * 0.5))*0.5
     else:
-        # Datetime to hours
+        #datetime covert to hours
         episode['hours'] = episode['hours'].dt.total_seconds() /(60*60)
     
     if remove_charttime:
@@ -187,7 +189,8 @@ def intime_to_hours(episode, intime, half_hour, remove_charttime=True, remove_st
         del episode['stay_id']
     return episode
 
-# All events that happen in the same half-hour merge into one row. If there is more than one value for one parameter, it will take the latest value.
+#all events that happen in the same half-hour merge into one row
+#if there is more than one value for one parameter, it will take the latest value
 def merge_same_hour_to_one_row(episode):
     episode = episode.groupby('hours', as_index=True, sort=False).last()
     return episode

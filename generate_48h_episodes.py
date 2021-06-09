@@ -36,10 +36,3 @@ episodes = read_timeseries(subjects_root_path, fileendswith)
 
 #plot
 #ep = plotEpisode(subjects_root_path, fileendswith)
-
-
-
-
-
-
-
