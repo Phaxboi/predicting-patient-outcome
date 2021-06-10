@@ -94,8 +94,6 @@ def rearrange_columns(patients_info, columns_title):
 #creates a folder for each patient and create a file with a summary of their hospital stays
 #also create a file 'mortality_summary' with 'stay_id' and 'hospital_expire_flag'
 def break_up_stays_by_subject(patients_info, output_path):
-    #NOTE: Kan man ta bort rad 98 (raden under)?
-    result_path = os.path.join(output_path, 'result')
     patients = patients_info.subject_id.unique()
     number_of_patients = patients.shape[0] 
     ids = []
