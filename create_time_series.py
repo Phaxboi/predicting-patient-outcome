@@ -1,3 +1,5 @@
+#this file reads each patients event file and creates a time serie for each of their stays
+
 import argparse
 import os
 import sys
@@ -11,14 +13,14 @@ from mimic4csv import *
 def create_episode(patient_id):
     try:
         #read the summary file for each patient
-        patient_summary = pd.read_csv(os.path.join(args.subjects_root_path, str(patient_id), 'patient_info_summary.csv'), usecols=['stay_id', 'intime', 'outtime'], dtype={'stay_id':int, 'intime':object, 'outtime':object})
-        events = pd.read_csv(os.path.join(args.subjects_root_path, str(patient_id), 'events.csv'))
+        patient_info_summary = pd.read_csv(os.path.join(subjects_root_path, str(patient_id), 'patient_info_summary.csv'), usecols=['stay_id', 'intime', 'outtime'], dtype={'stay_id':int, 'intime':object, 'outtime':object})
+        events = pd.read_csv(os.path.join(subjects_root_path, str(patient_id), 'events.csv'))
     except:
         sys.stderr.write('Error, when trying to read the following: {}\n'.format(patient_id))
         return()
 
-    #merge Event table with item the model look at.
-    events = events.merge(maps, left_on='itemid', right_index=True)
+    # Merge Event table with item the model look at.
+    events = events.merge(itemID_map, left_on='itemid', right_index=True)
 
     #convert lb -> kg
     events = fix_weight(events)
@@ -30,15 +32,15 @@ def create_episode(patient_id):
     events = fix_temperature(events)
 
 
-    #convert event table to a time serie
-    timeseries = convert_events_timeserie(events,  variables=variable_map)
+    # Convert event table to a time serie
+    timeseries = convert_events_timeserie(events,  variables=variable_names)
 
 
-    #extracting separate episodes
-    for i in range(patient_summary.shape[0]):
-        stay_id = patient_summary.stay_id.iloc[i]
-        intime = patient_summary.intime.iloc[i]
-        outtime = patient_summary.outtime.iloc[i]
+    # Extracting separate episodes
+    for i in range(patient_info_summary.shape[0]):
+        stay_id = patient_info_summary.stay_id.iloc[i]
+        intime = patient_info_summary.intime.iloc[i]
+        outtime = patient_info_summary.outtime.iloc[i]
 
         #get all episodes
         episode = get_episode(timeseries, stay_id, intime, outtime)
@@ -53,9 +55,9 @@ def create_episode(patient_id):
         columns_sorted = sorted(columns, key=(lambda x: "" if x =="hours" else x))
         episode = episode[columns_sorted]
         if half_hour:
-            episode.to_csv(os.path.join(args.subjects_root_path, str(patient_id), 'episode{}_'.format(i+1) + str(stay_id) + '_timeseries_half_hour.csv'), index_label='hours')
+            episode.to_csv(os.path.join(subjects_root_path, str(patient_id), 'episode{}_'.format(i+1) + str(stay_id) + '_timeseries_half_hour.csv'), index_label='hours')
         else:
-            episode.to_csv(os.path.join(args.subjects_root_path, str(patient_id), 'episode{}_'.format(i+1) + str(stay_id) + '_timeseries.csv'), index_label='hours')
+            episode.to_csv(os.path.join(subjects_root_path, str(patient_id), 'episode{}_'.format(i+1) + str(stay_id) + '_timeseries.csv'), index_label='hours')
 
 
 
@@ -63,20 +65,21 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
-    parser.add_argument('--mimic_path', type=str, help='Directory containing all MIMIC-IV CSV files.')
     parser.add_argument('-half_hour', action='store_true', help='Set this if you want to generate time series with half hours interval.')
     args = parser.parse_args(),
 
     half_hour = args.half_hour
+    subjects_root_path = args.subjects_root_path
 
-    maps = pd.read_csv(os.path.join( 'itemid_to_variable_map.csv'), index_col=None).fillna('')
-    maps['itemid'] = pd.to_numeric(maps['itemid'])
-    maps = maps.set_index('itemid')
 
-    variable_map = maps.variable_name.unique()
+    itemID_map = pd.read_csv(os.path.join('itemid_to_variable_map.csv'), index_col=None).fillna('')
+    itemID_map['itemid'] = pd.to_numeric(itemID_map['itemid'])
+    itemID_map = itemID_map.set_index('itemid')
+
+    variable_names= itemID_map.variable_name.unique()
 
     #read the summary file and extract a list of all subject_ids that are elevant
-    stays_summary = pd.read_csv(os.path.join(args.subjects_root_path, 'stays.csv'), usecols=['subject_id'], dtype={'subject_id':int})
+    stays_summary = pd.read_csv(os.path.join(subjects_root_path, 'stays.csv'), usecols=['subject_id'], dtype={'subject_id':int})
     ids_summary = pd.unique(stays_summary.subject_id).tolist()
 
     for patient_id in tqdm(ids_summary, desc='Iterating over subjects'):
