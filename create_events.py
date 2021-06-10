@@ -1,3 +1,5 @@
+#this file reads the stays_summary file and for each patient will generate a summary of all their events (chartevents) 
+
 import argparse
 import os
 import sys
@@ -41,7 +43,7 @@ if __name__ == '__main__':
     parser.add_argument('--mimic_path', type=str, help='Directory containing all MIMIC-IV CSV files.')
     args = parser.parse_args()
 
-    #reading tables
+    # reading tables
     chartevents = pd.read_csv(os.path.join(args.mimic_path, 'icu', 'chartevents.csv'), usecols=['subject_id', 'hadm_id', 'stay_id', 'charttime', 'itemid', 'value'], dtype={'subject_id':int, 'hadm_id':int, 'stay_id':int, 'charttime':object, 'itemid': int, 'value':object, 'valuenum':float, 'valueuom':object, 'warning':int})
     
     #read the summary file and extract a list of all subject_ids that are elevant
