@@ -66,7 +66,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
     parser.add_argument('-half_hour', action='store_true', help='Set this if you want to generate time series with half hours interval.')
-    args = parser.parse_args()
+    args = parser.parse_args(),
 
     half_hour = args.half_hour
     subjects_root_path = args.subjects_root_path
