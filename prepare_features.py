@@ -127,7 +127,6 @@ def read_timeseries(patients_path, fileendswith):
     
 
     episodes_list = []
-    data_X = []
     for root, dirs, files in tqdm(os.walk(patients_path), desc='generating 48h time series'):
         episode_counter = 0
         for file_name in files:
@@ -140,14 +139,10 @@ def read_timeseries(patients_path, fileendswith):
 
                 episode_48h = remove_outliers(episode_48h, thresholds)
 
-                #data_X += episode_48h.values.tolist()
-
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h' + fileendswith
                 episode_48h.to_csv(os.path.join(root, file_name), index=False)
 
-    #df = pd.DataFrame(data_X)
-    #df.to_csv(os.path.join(patients_path, 'result\\min_max_values.csv'))
 
     return(episodes_list)
 
@@ -214,15 +209,15 @@ def extract_48h(episode):
 #     return(episode_48h)
           
 
-# def plotEpisode(subjects_root_path, fileendswith):
-#     data_X = []
-#     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='Plot'):
-#         for file_name in files:
-#             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h' + fileendswith)):
-#                 episode = pd.read_csv(os.path.join(root, file_name))
-#                 values = episode.values.tolist()
-#                 data_X = data_X + values
-#     ep = pd.DataFrame(data_X,columns=['hours','Capillary refill rate','Diastolic blood pressure','Fraction inspired oxygen','Glasgow coma scale eye opening','Glasgow coma scale motor response','Glasgow coma scale verbal response','Glucose','Heart rate','Height','Mean blood pressure','Oxygen saturation','Respiratory Rate','Systolic blood pressure','Temperature','Weight','pH'])
-#     ep.hist(column=['Capillary refill rate','Diastolic blood pressure','Fraction inspired oxygen','Glasgow coma scale eye opening','Glasgow coma scale motor response','Glasgow coma scale verbal response','Glucose','Heart rate','Height','Mean blood pressure','Oxygen saturation','Respiratory Rate','Systolic blood pressure','Temperature','Weight','pH'],bins=100)
-#     plt.show()
-#     return ep
+def plotEpisode(subjects_root_path, fileendswith):
+    data_X = []
+    for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='Plot'):
+        for file_name in files:
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h' + fileendswith)):
+                episode = pd.read_csv(os.path.join(root, file_name))
+                values = episode.values.tolist()
+                data_X = data_X + values
+    ep = pd.DataFrame(data_X,columns=['hours','Capillary refill rate','Diastolic blood pressure','Fraction inspired oxygen','Glasgow coma scale eye opening','Glasgow coma scale motor response','Glasgow coma scale verbal response','Glucose','Heart rate','Height','Mean blood pressure','Oxygen saturation','Respiratory Rate','Systolic blood pressure','Temperature','Weight','pH'])
+    ep.hist(column=['Capillary refill rate','Diastolic blood pressure','Fraction inspired oxygen','Glasgow coma scale eye opening','Glasgow coma scale motor response','Glasgow coma scale verbal response','Glucose','Heart rate','Height','Mean blood pressure','Oxygen saturation','Respiratory Rate','Systolic blood pressure','Temperature','Weight','pH'],bins=100)
+    plt.show()
+    return ep

@@ -4,7 +4,6 @@
 import argparse
 import os
 import numpy as np
-#import matplotlib.pyplot as plt
 
 from mimic4csv import *
 
@@ -59,7 +58,7 @@ fix_missing_deathtimes(patients_info)
 columns_title = ['subject_id', 'gender', 'age', 'birth_year', 'dod', 'hadm_id', 'admittime', 'dischtime', 'deathtime', 'stay_id', 'first_careunit', 'last_careunit', 'intime', 'outtime', 'los', 'hospital_expire_flag']
 patients_info = rearrange_columns(patients_info, columns_title)
 
-
+#reduce pateints_info file to only contain 5% of the original amount of patients
 if generate_small_subset:
     length = len(patients_info.index)
     end_index = int(length*0.05)
@@ -69,7 +68,7 @@ if generate_small_subset:
 patients_info.to_csv(os.path.join(output_path, 'stays.csv'), index=False)
 
 #break up subjects
-#NOTE: will generate a folder and file for each subject which takes ages to delete, can be commented if you dont want it for some reason
+#NOTE: will generate a folder and file for each subject which takes ages to delete
 patients_info = pd.read_csv(os.path.join(output_path, 'stays.csv'))
 break_up_stays_by_subject(patients_info, output_path)
 

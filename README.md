@@ -23,16 +23,16 @@ This command will significantly downsize the chartevents.csv file from 29Gb to 1
 ***NOTE:*** After it has been run it will create a 'chartevents_filtered.csv' at 'mimic_path\ which you then need to rename to 'chartevents.csv' if you want to use it. 
 
 
-*****CREATE A EVENT FILE PER SUBJECTS*****
+*****CREATE AN EVENT FILE PER SUBJECTS*****
 
 python -m create_events --subjects_root_path {root directory for generated subject folders} --mimic_path {path to mimic files}
 
-This command will extract a event file for each patient, and write the file to respective patients folder.
+This command will extract an event file for each patient, and write the file to respective patients folder.
 
 
 *****CREATE EPISODES FILES PER SUBJECTS*****
 
-python -m create_time_series --subjects_root_path {root directory for generated subject folders} --mimic_path {path to mimic files} -half_hour (if you want to round all events to the nearest half-hour)
+python -m create_time_series --subjects_root_path {root directory for generated subject folders} -half_hour (if you want to round all events to the nearest half-hour)
 
 This command will create all episodes files for each patient, generate a time series file for each episode and write them as seperate
 files to respective patients folder.
@@ -56,8 +56,10 @@ missing values. This module will generate an 'episodeX_timeseries_48h.csv' for e
 of the first 48h for each patient. Outliers wll be removed according to the 'subjects_root_path\results\outlier_thresholds.csv' file.
 
 
-*****GENERATE FEATURES AND CREATE A SIMPLE REGRESSIION MODEL*****
+*****GENERATE FEATURES AND CREATE A SIMPLE IN-HOSPITAL PREDICTION MODEL*****
 
-python -m generate_in_hospital_mortality_regression_model --subjects_root_path {root directory for generated subject folders} -use_generated_features_file (set if you want to use the previously generated features) -categorical {Set this if you want to run the categorical model instead of the numerical}
+python -m generate_in_hospital_mortality_model --subjects_root_path {root directory for generated subject folders} -use_generated_features_file (set if you want to use the previously generated features) -categorical {Set this if you want to run the categorical model instead of the numerical}
 
-Will write the features and outcomes to results\features_X.csv and results\outcomes_X.csv where X is either 'numerical' or 'categorical' depending on the -categorical flag. 
+This will generate features and create a prediction model for the in-hospital prediction task. Can be either using our numerical apporach or categorical approach.
+Will write the features and outcomes to results\features_X.csv and results\outcomes_X.csv, where X is either 'numerical' or 'categorical' depending on the -categorical flag.
+After this the model can then be trained again with different parameters by setting the "-use_generated_features_file" flag. 

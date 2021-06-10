@@ -1,11 +1,10 @@
-#this file reads each patients event file and creates a time serie for each of their stays
+#reads each patients event file and creates a time serie for each of their stays
 
 import argparse
 import os
 import sys
 import numpy as np
 import pandas as pd
-import multiprocessing as mp
 
 from tqdm import tqdm
 from mimic4csv import *
@@ -66,7 +65,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
     parser.add_argument('-half_hour', action='store_true', help='Set this if you want to generate time series with half hours interval.')
-    args = parser.parse_args(),
+    args = parser.parse_args()
 
     half_hour = args.half_hour
     subjects_root_path = args.subjects_root_path

@@ -1,4 +1,4 @@
-#this file reads the stays_summary file and for each patient will generate a summary of all their events (chartevents) 
+#reads the stays_summary file and for each patient will generate a summary of all their events (from chartevents) 
 
 import argparse
 import os

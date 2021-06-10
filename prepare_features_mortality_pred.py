@@ -33,15 +33,9 @@ def extract_features(subjects_root_path, use_categorical_flag):
     
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading values'):
         for file_name in files:
-            #if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
-            #if(file_name.startswith('num_category')):
             #read only desiered files
             if(check_filename_function(file_name)):
                 episode = pd.read_csv(os.path.join(root, file_name))
-                #for 48h
-                #stay_id = re.search('.*_(\d*)_.*', file_name).group(1)
-                #for categorical
-                #stay_id = re.search('.*_(\d*).*', file_name).group(1)
                 stay_id = get_stay_id(file_name)
                 mortality = mortalities.loc[int(stay_id)].hospital_expire_flag
             
@@ -177,51 +171,51 @@ def get_stay_id_numerical(filename):
 
 
 
-def scale_values_alt(subjects_root_path):
-    data_X = []
-    data_Y = []
-    mortalities = pd.read_csv(os.path.join(subjects_root_path, 'mortality_summary.csv'))
-    mortalities.set_index('stay_id',inplace=True, drop=True)
+# def scale_values_alt(subjects_root_path):
+#     data_X = []
+#     data_Y = []
+#     mortalities = pd.read_csv(os.path.join(subjects_root_path, 'mortality_summary.csv'))
+#     mortalities.set_index('stay_id',inplace=True, drop=True)
 
-    imputer = SimpleImputer(missing_values=np.nan, strategy='mean', verbose=0, copy=False)
-    #extract the data once to fit the imputer
-    for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading timeseries'):
-        for file_name in files:
-            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
-                episode = pd.read_csv(os.path.join(root, file_name))
-                stay_id = re.search('.*_(\d*)_.*', file_name).group(1)
-                mortality = mortalities.loc[int(stay_id)].hospital_expire_flag
-                values = episode.values.tolist()
-                data_X = data_X + values
-                data_Y += [mortality]
-    imputer.fit(data_X)
-    data_X_imputed = imputer.transform(data_X)
+#     imputer = SimpleImputer(missing_values=np.nan, strategy='mean', verbose=0, copy=False)
+#     #extract the data once to fit the imputer
+#     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='reading timeseries'):
+#         for file_name in files:
+#             if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+#                 episode = pd.read_csv(os.path.join(root, file_name))
+#                 stay_id = re.search('.*_(\d*)_.*', file_name).group(1)
+#                 mortality = mortalities.loc[int(stay_id)].hospital_expire_flag
+#                 values = episode.values.tolist()
+#                 data_X = data_X + values
+#                 data_Y += [mortality]
+#     imputer.fit(data_X)
+#     data_X_imputed = imputer.transform(data_X)
 
-    #sum every 95 rows
-    data_X_summarised = []
-    n_stays = len(mortalities.index)
-    index_start = 0
-    index_stop = 95
-    increment = 95
-    for num in range(n_stays):
-        cols = data_X_imputed[index_start:index_stop]
-        sum_cols = [sum(i) for i in zip(*cols)]
-        index_start += increment
-        index_stop += increment
+#     #sum every 95 rows
+#     data_X_summarised = []
+#     n_stays = len(mortalities.index)
+#     index_start = 0
+#     index_stop = 95
+#     increment = 95
+#     for num in range(n_stays):
+#         cols = data_X_imputed[index_start:index_stop]
+#         sum_cols = [sum(i) for i in zip(*cols)]
+#         index_start += increment
+#         index_stop += increment
         
-        #delete 'hours'
-        del sum_cols[0]
-        #delete 'pH' because there seems to be some huge outliers here
-        del sum_cols[15]
-        data_X_summarised += [sum_cols]
+#         #delete 'hours'
+#         del sum_cols[0]
+#         #delete 'pH' because there seems to be some huge outliers here
+#         del sum_cols[15]
+#         data_X_summarised += [sum_cols]
 
-    #standardize
-    scaler = StandardScaler()
-    scaler.fit(data_X_summarised)
-    data_X_standardized = scaler.transform(data_X_summarised)
+#     #standardize
+#     scaler = StandardScaler()
+#     scaler.fit(data_X_summarised)
+#     data_X_standardized = scaler.transform(data_X_summarised)
 
-    df = pd.DataFrame(data_X_standardized)
-    df.to_csv(os.path.join(subjects_root_path, 'all_data_standardized.csv'))
+#     df = pd.DataFrame(data_X_standardized)
+#     df.to_csv(os.path.join(subjects_root_path, 'all_data_standardized.csv'))
 
-    return(data_X_standardized, data_Y)
+#     return(data_X_standardized, data_Y)
 

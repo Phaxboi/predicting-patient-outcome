@@ -1,4 +1,4 @@
-
+#iterate through all patients data to determine outliers, by using the iqr method
 
 import os
 import argparse

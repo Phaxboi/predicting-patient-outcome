@@ -23,8 +23,6 @@ from tqdm import tqdm
 from matplotlib import pyplot
 from prepare_features_mortality_pred import *
 
-import re
-import json
 
 
 def main():
@@ -64,11 +62,6 @@ def main():
         outcomes = pd.DataFrame(data_Y)
         outcomes.to_csv(os.path.join(args.subjects_root_path, 'result\\', outcomes_file_name), index=False)
 
-        #read all subjects folders and save a summary file
-        #(data_X, data_Y) = scale_values_alt(args.subjects_root_path)
-
-        #read an already existing summary file
-        #(data_X, data_Y) = read_values(args.subjects_root_path)
 
 
     trainX, testX, trainy, testy = train_test_split(data_X, data_Y, test_size=0.15, random_state=2)
@@ -139,9 +132,6 @@ def main():
     pyplot.show()
     
 
-    # print(model.predict(trainX))
-    # print(model.predict_log_proba(trainX))
-    # print(model.predict_proba(trainX))
 
     pca = PCA(n_components=2).fit(trainX)
     pca_X = np.array(pca.transform(trainX))
@@ -169,33 +159,6 @@ def main():
     pyplot.show()
     print("end")
 
-
-
-
-
-    # #NOTE:rest is compied from becnhmark program
-    # result_dir = os.path.join(args.subjects_root_path, 'results')
-    # try:
-    #     os.makedirs(result_dir)
-    # except:
-    #     pass
-
-    # file_name = 'result_scuffed_model'
-
-    # with open(os.path.join(result_dir, 'train_{}.json'.format(file_name)), 'w') as res_file:
-    #         ret = print_metrics_binary(data_Y, model.predict_proba(data_X))
-    #         ret = {k : float(v) for k, v in ret.items()}
-    #         json.dump(ret, res_file)
-
-
-    # prediction = model.predict_proba(data_X_test)[:, 1]
-
-    # with open(os.path.join(result_dir, 'test_{}.json'.format(file_name)), 'w') as res_file:
-    #     ret = print_metrics_binary(data_Y_test, prediction)
-    #     ret = {k: float(v) for k, v in ret.items()}
-    #     json.dump(ret, res_file)
-
-    #save_results(test_names, prediction, test_y, os.path.join(args.output_dir, 'predictions', file_name + '.csv'))
 
 
 
