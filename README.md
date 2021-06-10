@@ -9,10 +9,9 @@ Modules need to be run in this order to work, can be re-run to re-generate to fi
 python -m extract_subjects --mimic_path {path to mimic files} --output_path {desired output path} -generate_small_subset (set this to only generate a small subset (5%) of esubjects)
 
 This command will generate the output folder with a 'stays.csv' file which is a summary of all patients and their stays info.
-Only keeps patients with stays >48h. 
-
-It will then generate one folder per patient, named using their subject id. There a 'patient_info_summary.csv' file be
-generated with the details of that specific patients stays.
+Only keeps patients with stays >48h and are older than 18. 
+It will then generate one folder per patient, named using their subject id. There a 'patient_info_summary.csv' file will be
+generated with the details of that specific patients stays. Will also generate a "result" folder where most output data that is not patients specific is put.
 
 
 *****DOWNSIZE CHARTEVENTS FILE*****
