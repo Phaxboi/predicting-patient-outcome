@@ -22,13 +22,13 @@ def create_episode(patient_id):
     # Merge Event table with item the model look at.
     events = events.merge(itemID_map, left_on='itemid', right_index=True)
 
-    # Convert lb -> kg
+    #convert lb -> kg
     events = fix_weight(events)
 
-    # Convert inch -> cm 
+    #convert inch -> cm 
     events = fix_height(events)
 
-    # Convert F -> C
+    #convert F -> C
     events = fix_temperature(events)
 
 
@@ -42,13 +42,13 @@ def create_episode(patient_id):
         intime = patient_info_summary.intime.iloc[i]
         outtime = patient_info_summary.outtime.iloc[i]
 
-        # Get all episodes
+        #get all episodes
         episode = get_episode(timeseries, stay_id, intime, outtime)
 
-        # Change time to hours, count from intime = 0 
+        #change time to hours, count from intime = 0 
         episode = intime_to_hours(episode, intime, half_hour).set_index('hours').sort_index(axis=0)
         if half_hour:
-            # All events that happen in the same half-hour merge into one row
+            #all events that happen in the same half-hour merge into one row
             episode = merge_same_hour_to_one_row(episode)
 
         columns = list(episode.columns)
