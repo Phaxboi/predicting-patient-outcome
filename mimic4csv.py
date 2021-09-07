@@ -57,10 +57,6 @@ def merge_patients_admissions(patients, admissions):
     patients_info = patients.merge(admissions, how='inner', left_on='subject_id', right_on='subject_id')
     return patients_info
 
-# #merge patient+admission information with transfer information
-# def merge_admissions_transfers(patients_info, transfers):
-#     patients_info = patients_info.merge(transfers, how='inner', left_on=['subject_id', 'hadm_id'], right_on=['subject_id', 'hadm_id'])
-#     return patients_info
 
 #merge with icu stay information
 def merge_admissions_stays(patients_info, icustays):
@@ -98,7 +94,6 @@ def rearrange_columns(patients_info, columns_title):
 #creates a folder for each patient and create a file with a summary of their hospital stays
 #also create a file 'mortality_summary' with 'stay_id' and 'hospital_expire_flag'
 def break_up_stays_by_subject(patients_info, output_path):
-    result_path = os.path.join(output_path, 'result')
     patients = patients_info.subject_id.unique()
     number_of_patients = patients.shape[0] 
     ids = []
@@ -117,7 +112,8 @@ def break_up_stays_by_subject(patients_info, output_path):
     mortality_summary = pd.DataFrame({'stay_id': ids, 'hospital_expire_flag':mortality})
     mortality_summary.to_csv(os.path.join(output_path, 'mortality_summary.csv'), index=False)
 
-# Merge patients_info and chartevents.csv. Drop unnecessary columns 
+#merge patients_info and chartevents.csv
+#and drop unnecessary columns 
 def merge_stays_chartevents(patients_info, chart):
     events = patients_info.merge(chart, how='inner', left_on=['subject_id', 'hadm_id', 'stay_id'], right_on=['subject_id', 'hadm_id', 'stay_id'])
     events = events[['subject_id', 'hadm_id', 'stay_id', 'itemid', 'intime', 'charttime', 'storetime', 'value', 'valueuom']]
@@ -131,7 +127,7 @@ def fix_weight(events):
         events.at[index, 'uom'] = 'kg'
     return events
 
-# Converts all heights to a unified scale (cm)
+#converts all heights to a unified scale (cm)
 def fix_height(events):
     indices = events.index[(events['variable_name'] == 'Height') & (events['uom'] == 'Inch')]
     for index in indices:
@@ -139,7 +135,7 @@ def fix_height(events):
         events.at[index, 'uom'] = 'cm'
     return events
 
-# Converts all temperatures to a unified scale Celsius 
+#converts all temperatures to a unified scale Celsius 
 def fix_temperature(events):
     indices = events.index[(events['variable_name'] == 'Temperature') & (events['uom'] == 'F')]
     for index in indices:
@@ -147,7 +143,7 @@ def fix_temperature(events):
         events.at[index, 'uom'] = 'C'
     return events
 
-# Convert Events table to Timeseries
+#convert Events table to Timeseries
 def convert_events_timeserie(events, variables):
     meta_data = events[['charttime', 'stay_id']]\
                 .sort_values(by=['charttime', 'stay_id'])\
@@ -163,7 +159,7 @@ def convert_events_timeserie(events, variables):
             timeseries[i] = np.nan
     return timeseries
 
-# Get episodes
+#get episodes
 def get_episode(events, stay_id, intime=None, outtime=None):
     idx = (events.stay_id == stay_id)
     if intime is not None and outtime is not None:
@@ -171,15 +167,19 @@ def get_episode(events, stay_id, intime=None, outtime=None):
     events = events[idx]
     return events
 
-# Calculate hour and output is rounded to every half hour
-def intime_to_hours(episode, intime, remove_charttime=True, remove_stay_id=True):
+#calculate hour and output is rounded to every half hour
+def intime_to_hours(episode, intime, half_hour, remove_charttime=True, remove_stay_id=True):
     episode = episode.copy()
     intime = pd.to_datetime(intime)
     episode['charttime'] = pd.to_datetime(episode.charttime)
     episode['hours'] = episode['charttime'] - intime
 
-    # Datetime to minutes and then round to nearest half hour. round(x/a)*a where x = hour and a = the factor you want (30 min = 0.5)
-    episode['hours'] = round(episode['hours'].dt.total_seconds() /(60 * 60 * 0.5))*0.5
+    if half_hour:
+        #datetime convert to minutes and then round to nearest half hour. round(x/a)*a where x = hour and a = the factor you want (30 min = 0.5)
+        episode['hours'] = round(episode['hours'].dt.total_seconds() /(60 * 60 * 0.5))*0.5
+    else:
+        #datetime covert to hours
+        episode['hours'] = episode['hours'].dt.total_seconds() /(60*60)
     
     if remove_charttime:
         del episode['charttime']
@@ -187,26 +187,8 @@ def intime_to_hours(episode, intime, remove_charttime=True, remove_stay_id=True)
         del episode['stay_id']
     return episode
 
-# All events that happen in the same half-hour merge into one row. The mean of the values, and last result for Capillary refill rate. NA does not count.
-# NOTE Need to be changed when the labels change. These are comments right now.
+#all events that happen in the same half-hour merge into one row
+#if there is more than one value for one parameter, it will take the latest value
 def merge_same_hour_to_one_row(episode):
-    # episode['Capillary refill rate'] = episode['Capillary refill rate'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Diastolic blood pressure'] = pd.to_numeric(episode['Diastolic blood pressure']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Fraction inspired oxygen'] = pd.to_numeric(episode['Fraction inspired oxygen']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Glasgow coma scale eye opening'] = episode['Glasgow coma scale eye opening'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Glasgow coma scale motor response'] = episode['Glasgow coma scale motor response'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Glascow coma scale verbal response'] = episode['Glascow coma scale verbal response'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Glasgow coma scale total'] = episode['Glasgow coma scale total'].groupby('hours', as_index=True, sort=False).last()
-    # episode['Glucose'] = pd.to_numeric(episode['Glucose']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Heart rate'] = pd.to_numeric(episode['Heart rate']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Height'] = pd.to_numeric(episode['Height']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Mean blood pressure'] = pd.to_numeric(episode['Mean blood pressure']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Oxygen saturation'] = pd.to_numeric(episode['Oxygen saturation']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Respiratory Rate'] = pd.to_numeric(episode['Respiratory Rate']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Systolic blood pressure'] = pd.to_numeric(episode['Systolic blood pressure']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Temperature'] = pd.to_numeric(episode['Temperature']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['Weight'] = pd.to_numeric(episode['Weight']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode['pH'] = pd.to_numeric(episode['pH']).groupby('hours', as_index=True, sort=False).mean().round(1)
-    # episode = episode.drop_duplicates()
     episode = episode.groupby('hours', as_index=True, sort=False).last()
     return episode

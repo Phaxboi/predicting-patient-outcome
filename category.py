@@ -1,7 +1,5 @@
 import argparse
-from get_outlier_thresholds import main
 import os
-from unicodedata import category
 import pandas as pd
 import numpy as np
 import re
@@ -40,13 +38,14 @@ def add_category_fraction_inspired_oxygen(episode, category):
 
 def add_category_glasgow_coma_scale_eye_opening(episode, category):
     categories_gcs_eye = [
+        (pd.isna(episode['Glasgow coma scale eye opening']) == True),
         (episode['Glasgow coma scale eye opening'] == 0),
         (episode['Glasgow coma scale eye opening'] == 1),
         (episode['Glasgow coma scale eye opening'] == 2),
         (episode['Glasgow coma scale eye opening'] == 3),
         (episode['Glasgow coma scale eye opening'] == 4)
         ]
-    category_eye = ['Not Testable', 'Does not open eyes', 'Opens eyes in response to pain', 'Opens eyes in response to voice', 'Opens eyes spontaneously']
+    category_eye = [np.nan, 'Not Testable', 'Does not open eyes', 'Opens eyes in response to pain', 'Opens eyes in response to voice', 'Opens eyes spontaneously']
     category['cat_gcs_eye'] = np.select(categories_gcs_eye, category_eye)
     category['cat_gcs_eye'] = [np.nan if ele == 'nan' else ele for ele in category['cat_gcs_eye']]
     category['num_gcs_eye'] = [0 if ele == 'Not Testable' else 1 if ele == 'Does not open eyes' else 2 if ele == 'Opens eyes in response to pain' else 3 if ele == 'Opens eyes in response to voice' else 4 if ele == 'Opens eyes spontaneously' else np.nan for ele in category['cat_gcs_eye']]
@@ -54,6 +53,7 @@ def add_category_glasgow_coma_scale_eye_opening(episode, category):
 
 def add_category_glasgow_coma_scale_motor_response(episode, category):
     categories_gcs_motor = [
+        (pd.isna(episode['Glasgow coma scale motor response']) == True),
         (episode['Glasgow coma scale motor response'] == 0),
         (episode['Glasgow coma scale motor response'] == 1),
         (episode['Glasgow coma scale motor response'] == 2),
@@ -62,7 +62,7 @@ def add_category_glasgow_coma_scale_motor_response(episode, category):
         (episode['Glasgow coma scale motor response'] == 5),
         (episode['Glasgow coma scale motor response'] == 6)
         ]
-    category_motor = ['Not Testable', 'Makes no movements', 'Extension to painful stimuli', 'Abnormal flexion to painful stimuli', 'Flexion / Withdrawal to painful stimuli', 'Localizes to painful stimuli', 'Obeys commands']
+    category_motor = [np.nan, 'Not Testable', 'Makes no movements', 'Extension to painful stimuli', 'Abnormal flexion to painful stimuli', 'Flexion / Withdrawal to painful stimuli', 'Localizes to painful stimuli', 'Obeys commands']
     category['cat_gcs_motor'] = np.select(categories_gcs_motor, category_motor)
     category['cat_gcs_motor'] = [np.nan if ele == 'nan' else ele for ele in category['cat_gcs_motor']]
     category['num_gcs_motor'] = [0 if ele == 'Not Testable' else 1 if ele == 'Makes no movements' else 2 if ele == 'Extension to painful stimuli' else 3 if ele == 'Abnormal flexion to painful stimuli' else 4 if ele == 'Flexion / Withdrawal to painful stimuli' else 5 if ele == 'Localizes to painful stimuli' else 6 if ele == 'Obeys commands' else np.nan for ele in category['cat_gcs_motor']]
@@ -70,6 +70,7 @@ def add_category_glasgow_coma_scale_motor_response(episode, category):
 
 def add_category_glasgow_coma_scale_verbal_response(episode, category):
     categories_gcs_verbal = [
+        (pd.isna(episode['Glasgow coma scale verbal response']) == True),
         (episode['Glasgow coma scale verbal response'] == 0),
         (episode['Glasgow coma scale verbal response'] == 1),
         (episode['Glasgow coma scale verbal response'] == 2),
@@ -77,7 +78,7 @@ def add_category_glasgow_coma_scale_verbal_response(episode, category):
         (episode['Glasgow coma scale verbal response'] == 4),
         (episode['Glasgow coma scale verbal response'] == 5)
         ]
-    category_verbal = ['Not Testable', 'Makes no sounds', 'Makes sounds', 'Words', 'Confused, disoriented', 'Oriented, converses normally']
+    category_verbal = [np.nan, 'Not Testable', 'Makes no sounds', 'Makes sounds', 'Words', 'Confused, disoriented', 'Oriented, converses normally']
     category['cat_gcs_verbal'] = np.select(categories_gcs_verbal, category_verbal)
     category['cat_gcs_verbal'] = [np.nan if ele == 'nan' else ele for ele in category['cat_gcs_verbal']]
     category['num_gcs_verbal'] = [0 if ele == 'Not Testable' else 1 if ele == 'Makes no sounds' else 2 if ele == 'Makes sounds' else 3 if ele == 'Words' else 4 if ele == 'Confused, disoriented' else 5 if ele == 'Oriented, converses normally' else np.nan for ele in category['cat_gcs_verbal']]
@@ -142,14 +143,15 @@ def add_category_mean_blood_pressure(episode, category):
 def add_category_oxygen_saturation(episode, category):
     categories_os = [
         (pd.isna(episode['Oxygen saturation']) == True),
-        (episode['Oxygen saturation'] < 94),
-        (episode['Oxygen saturation'] >= 94) & (episode['Oxygen saturation'] < 96),
-        (episode['Oxygen saturation'] >= 96) & (episode['Oxygen saturation'] < 100)
+        (episode['Oxygen saturation'] < 70),
+        (episode['Oxygen saturation'] >= 70) & (episode['Oxygen saturation'] < 90),
+        (episode['Oxygen saturation'] >= 90) & (episode['Oxygen saturation'] < 99),
+        (episode['Oxygen saturation'] > 98)
         ]
-    category_os = [np.nan, 'critical', 'low', 'normal']
+    category_os = [np.nan, 'critical', 'low', 'normal', 'high']
     category['cat_oxygen_saturation'] = np.select(categories_os, category_os)
     category['cat_oxygen_saturation'] = [np.nan if ele == 'nan' else ele for ele in category['cat_oxygen_saturation']]
-    category['num_oxygen_saturation'] = [0 if ele == 'critical' else 1 if ele == 'low' else 2 if ele == 'normal' else np.nan for ele in category['cat_oxygen_saturation']]
+    category['num_oxygen_saturation'] = [0 if ele == 'critical' else 1 if ele == 'low' else 2 if ele == 'normal' else 3 if ele == 'high' else np.nan for ele in category['cat_oxygen_saturation']]
     return category
 
 def add_category_respiratory_rate(episode, category):
@@ -182,9 +184,9 @@ def add_systolic_blood_pressure(episode, category):
 def add_category_temperature(episode, category):
     categories_temp = [
         (pd.isna(episode['Temperature']) == True),
-        (episode['Temperature'] < 36.5),
-        (episode['Temperature'] >= 36.5) & (episode['Temperature'] <= 37.2),
-        (episode['Temperature'] > 37.2)
+        (episode['Temperature'] < 36),
+        (episode['Temperature'] >= 36) & (episode['Temperature'] <= 37.8),
+        (episode['Temperature'] > 37.8)
         ]
     category_temperature = [np.nan, 'low', 'normal', 'high']
     category['cat_temperature'] = np.select(categories_temp, category_temperature)
@@ -230,13 +232,18 @@ def remove_cat_values(category):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
+    parser.add_argument('-half_hour', action='store_true', help='Set this if you want to generate time series 48h with half hours interval.')
     args = parser.parse_args()
+
     subjects_root_path = args.subjects_root_path
+    if args.half_hour:
+        fileendswith = '_half_hour.csv'
+    else:
+        fileendswith = '.csv'
 
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='Category'):
-        category_counter = 0
         for file_name in files:
-            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h' + fileendswith)):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 category = pd.DataFrame()
                 category['hours'] = episode['hours']
@@ -257,12 +264,12 @@ def main():
                 category = add_category_weight(episode, category)
                 category = add_category_ph(episode, category)
 
-                subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
-                file_name = 'category' + str(category_counter) + '_' + str(subj_id) + '.csv'
+                stay_id = re.search('.*_(\d*)_.*', file_name).group(1)
+                file_name = 'category' + '_' + str(stay_id) + fileendswith
                 category.to_csv(os.path.join(root, file_name), index=False)
 
                 category = remove_cat_values(category)
-                file_name = 'num_category' + str(category_counter) + '_' + str(subj_id) + '.csv'
+                file_name = 'num_category' + '_' + str(stay_id) + fileendswith
                 category.to_csv(os.path.join(root, file_name), index=False)
 
 if __name__ == '__main__':

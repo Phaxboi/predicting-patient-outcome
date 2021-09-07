@@ -1,4 +1,4 @@
-
+#iterate through all patients data to determine outliers, by using the iqr method
 
 import os
 import argparse
@@ -8,18 +8,18 @@ import pandas as pd
 from tqdm import tqdm
 
 #gets the thresholds to filter outliers, return a list of touples(lower threshold, upper threshold), indexed by their column index
-def get_outlier_thresholds(patients_path):
+def get_outlier_thresholds(patients_path, fileendswith):
     data_X = []
     for root, dirs, files in tqdm(os.walk(patients_path), desc='reading'):
         for file_name in files:
-            if(file_name.startswith('episode') & file_name.endswith('timeseries.csv')):
+            if(file_name.startswith('episode') & file_name.endswith(fileendswith)):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 data_X += episode.values.tolist()
 
     rows = [i for i in zip(*data_X)]
 
     values_summary = pd.DataFrame(rows)
-    values_summary.to_csv(os.path.join(patients_path, 'result\\values_summary(no_filtering).csv'), index = False)
+    values_summary.to_csv(os.path.join(patients_path, 'result\\', 'values_summary(no_filtering)' + fileendswith), index = False)
 
     #NOTE: some rows does not make sense to calculate outliers on, so we remove them, rows 4-6 are not numerical, row 1 has no outliers
     #delete 'Glasgow coma scale verbal response'
@@ -57,7 +57,7 @@ def get_outlier_thresholds(patients_path):
 
     #write the thresholds to a csv to be used for later
     outlier_thresholds = pd.DataFrame(thresholds)
-    outlier_thresholds.to_csv(os.path.join(patients_path, 'result\\outlier_thresholds.csv'), index = False)
+    outlier_thresholds.to_csv(os.path.join(patients_path, 'result\\', 'outlier_thresholds' + fileendswith), index = False)
 
     return(thresholds)
 
@@ -85,11 +85,17 @@ def remove_outliers(episode_48h, thresholds):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
+    parser.add_argument('-half_hour', action='store_true', help='Set this if you want to calculate the outliers with half hours interval.')
     args = parser.parse_args()
 
     subjects_root_path = args.subjects_root_path
+    
+    if args.half_hour:
+        fileendswith = '_half_hour.csv'
+    else:
+        fileendswith = '.csv'
 
-    outlier_thresholds = get_outlier_thresholds(subjects_root_path)
+    outlier_thresholds = get_outlier_thresholds(subjects_root_path,fileendswith)
 
 
 

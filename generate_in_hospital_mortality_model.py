@@ -20,50 +20,54 @@ import numpy as np
 import argparse
 import pandas as pd
 from tqdm import tqdm
-from metrics import *
 from matplotlib import pyplot
 from prepare_features_mortality_pred import *
 
-import re
-import json
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
     parser.add_argument('-use_generated_features_file', action='store_true', help='Used to specify if the previously generated features in root/result should be used.')
+    parser.add_argument('-categorical', action='store_true', help='Set this if you want to run the categorical model instead of the numerical.')
     args = parser.parse_args()
 
+    use_categorical_flag = args.categorical
+
     if args.use_generated_features_file:
-        features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features.csv'))
-        outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes.csv'))
+        if use_categorical_flag:
+            features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features_categorical.csv'))
+            outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes_categorical.csv'))
+        else:
+            features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features_numerical.csv'))
+            outcomes = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\outcomes_numerical.csv'))
 
         data_X = features.values
         data_Y = outcomes.values
     else:
-        #read all subject folders
-        (data_X, data_Y) = scale_values(args.subjects_root_path)
+        #extract features for all patients
+        (data_X, data_Y) = extract_features(args.subjects_root_path, use_categorical_flag)
+
+        if(use_categorical_flag):
+            features_file_name = 'features_categorical.csv'
+            outcomes_file_name = 'outcomes_categorical.csv'
+        else:
+            features_file_name = 'features_numerical.csv'
+            outcomes_file_name = 'outcomes_numerical.csv'
 
         #save X and Y data to 'result' map
         features = pd.DataFrame(data_X)
-        file_name = 'features.csv'
-        features.to_csv(os.path.join(args.subjects_root_path, 'result\\', file_name), index=False)
+        features.to_csv(os.path.join(args.subjects_root_path, 'result\\', features_file_name), index=False)
 
         outcomes = pd.DataFrame(data_Y)
-        file_name = 'outcomes.csv'
-        outcomes.to_csv(os.path.join(args.subjects_root_path, 'result\\', file_name), index=False)
+        outcomes.to_csv(os.path.join(args.subjects_root_path, 'result\\', outcomes_file_name), index=False)
 
-        #read all subjects folders and save a summary file
-        #(data_X, data_Y) = scale_values_alt(args.subjects_root_path)
-
-        #read an already existing summary file
-        #(data_X, data_Y) = read_values(args.subjects_root_path)
 
 
     trainX, testX, trainy, testy = train_test_split(data_X, data_Y, test_size=0.15, random_state=2)
     testy = np.array(testy)
     trainy = np.array(trainy)
-    model = LogisticRegression(penalty='l2', C=0.1)#, random_state=42 #1 seem to be best for whole dataset
+    model = LogisticRegression(penalty='l2', C=0.001)#, random_state=42
     #model = RandomForestClassifier(n_estimators= 1000, random_state= 42)
     model.fit(trainX, trainy)
     print('Test accuracy:'+ str(model.score(testX, testy)))
@@ -128,9 +132,6 @@ def main():
     pyplot.show()
     
 
-    # print(model.predict(trainX))
-    # print(model.predict_log_proba(trainX))
-    # print(model.predict_proba(trainX))
 
     pca = PCA(n_components=2).fit(trainX)
     pca_X = np.array(pca.transform(trainX))
@@ -158,33 +159,6 @@ def main():
     pyplot.show()
     print("end")
 
-
-
-
-
-    # #NOTE:rest is compied from becnhmark program
-    # result_dir = os.path.join(args.subjects_root_path, 'results')
-    # try:
-    #     os.makedirs(result_dir)
-    # except:
-    #     pass
-
-    # file_name = 'result_scuffed_model'
-
-    # with open(os.path.join(result_dir, 'train_{}.json'.format(file_name)), 'w') as res_file:
-    #         ret = print_metrics_binary(data_Y, model.predict_proba(data_X))
-    #         ret = {k : float(v) for k, v in ret.items()}
-    #         json.dump(ret, res_file)
-
-
-    # prediction = model.predict_proba(data_X_test)[:, 1]
-
-    # with open(os.path.join(result_dir, 'test_{}.json'.format(file_name)), 'w') as res_file:
-    #     ret = print_metrics_binary(data_Y_test, prediction)
-    #     ret = {k: float(v) for k, v in ret.items()}
-    #     json.dump(ret, res_file)
-
-    #save_results(test_names, prediction, test_y, os.path.join(args.output_dir, 'predictions', file_name + '.csv'))
 
 
 

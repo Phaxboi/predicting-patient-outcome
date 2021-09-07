@@ -119,19 +119,18 @@ def impute(subjects_root_path):
 
 
 #read all episodes, transtale text data into numerical values and extract only first 48h
-def read_timeseries(patients_path):
+def read_timeseries(patients_path, fileendswith):
 
     #read all timeseries values, calculate iqr values to filter outliers, will only 
-    thresholds_csv = pd.read_csv(os.path.join(patients_path,'result\\outlier_thresholds.csv'))
+    thresholds_csv = pd.read_csv(os.path.join(patients_path,'result\\outlier_thresholds' + fileendswith))
     thresholds = [(a,b) for [a,b] in list(thresholds_csv.values)]
     
 
     episodes_list = []
-    data_X = []
     for root, dirs, files in tqdm(os.walk(patients_path), desc='generating 48h time series'):
         episode_counter = 0
         for file_name in files:
-            if(file_name.startswith('episode') & file_name.endswith('timeseries.csv')):
+            if(file_name.startswith('episode') & file_name.endswith('timeseries' + fileendswith)):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 episode_48h = extract_48h(episode)
                 #translate string values to numeric values, comment out if dont needed
@@ -140,23 +139,23 @@ def read_timeseries(patients_path):
 
                 episode_48h = remove_outliers(episode_48h, thresholds)
 
-                #data_X += episode_48h.values.tolist()
-
                 subj_id = re.search('.*_(\d*)_.*', file_name).group(1)
-                file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h.csv'
+                file_name = 'episode' + str(episode_counter) + '_' + str(subj_id) + '_timeseries_48h' + fileendswith
                 episode_48h.to_csv(os.path.join(root, file_name), index=False)
 
-    #df = pd.DataFrame(data_X)
-    #df.to_csv(os.path.join(patients_path, 'result\\min_max_values.csv'))
 
     return(episodes_list)
 
 
 #takes a timeseries dataframe, extract the first 48 hours
 def extract_48h(episode):
-    #make sure we start at hour zero and drop all hours after 48
-    first_index = episode.iloc[0]['hours']
-    episode['hours'] = episode['hours'] - first_index
+    #remove all measurements that are too far behind hour 0, 30 minutes at this time, can be changed
+    first_timestamp = episode.iloc[0]['hours']
+    while first_timestamp < -0.5 :
+        episode = episode.iloc[1:]
+        first_timestamp = episode.iloc[0]['hours']
+
+    episode['hours'] = episode['hours'] - first_timestamp
 
     episode_48h = episode[episode.hours <= 48]
 
@@ -210,11 +209,11 @@ def extract_48h(episode):
 #     return(episode_48h)
           
 
-def plotEpisode(subjects_root_path):
+def plotEpisode(subjects_root_path, fileendswith):
     data_X = []
     for root, dirs, files in tqdm(os.walk(subjects_root_path), desc='Plot'):
         for file_name in files:
-            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
+            if(file_name.startswith('episode') & file_name.endswith('timeseries_48h' + fileendswith)):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 values = episode.values.tolist()
                 data_X = data_X + values
