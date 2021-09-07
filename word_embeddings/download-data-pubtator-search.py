@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('search', nargs='+', help='search term, e.g. "cardiac failure"')
 parser.add_argument('--limit', default=1000, type=int, help='number or articles to fetch from pubmed')
 parser.add_argument('--stride', default=1, type=int, help='sample every N article')
+parser.add_argument('file_name', help='search term, e.g. "cardiac failure"')
 options = parser.parse_args()
 
 
@@ -41,9 +42,9 @@ print()
 
 articles = articles[::options.stride]
 
-name = term.replace('"','')
-name = '-'.join(name.split('+')[:5])
-w = open('word_embeddings/data/%s.json' % name, 'w')
+# name = term.replace('"','')
+# name = '-'.join(name.split('+')[:5])
+w = open('word_embeddings/data/%s.json' % options.file_name, 'w')
 chunk_cnt = 90
 saved_cnt = 0
 dict_art = {}
