@@ -43,7 +43,7 @@ articles = articles[::options.stride]
 
 name = term.replace('"','')
 name = '-'.join(name.split('+')[:5])
-w = open('data/%s.json' % name, 'w')
+w = open('word_embeddings/data/%s.json' % name, 'w')
 chunk_cnt = 90
 saved_cnt = 0
 dict_art = {}
