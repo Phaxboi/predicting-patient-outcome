@@ -23,5 +23,5 @@ for article_id in data:
     dict_art.update({article_id:{"title":title, "text":text}})
 
 
-with open("data_parsed.json", "w") as write_file:
+with open("word_embeddings/data/data_parsed.json", "w") as write_file:
     json.dump(dict_art, write_file, indent=2)
