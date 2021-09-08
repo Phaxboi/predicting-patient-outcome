@@ -42,8 +42,8 @@ print()
 
 articles = articles[::options.stride]
 
-name = term.replace('"','')
-name = '-'.join(name.split('+')[:5])
+# name = term.replace('"','')
+# name = '-'.join(name.split('+')[:5])
 w = open('word_embeddings/data/%s.json' % options.file_name, 'w', encoding="utf16")
 chunk_cnt = 90
 saved_cnt = 0
