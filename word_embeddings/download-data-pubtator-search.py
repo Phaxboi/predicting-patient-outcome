@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('search', nargs='+', help='search term, e.g. "cardiac failure"')
 parser.add_argument('--limit', default=1000, type=int, help='number or articles to fetch from pubmed')
 parser.add_argument('--stride', default=1, type=int, help='sample every N article')
+parser.add_argument('file_name', help='search term, e.g. "cardiac failure"')
 options = parser.parse_args()
 
 
@@ -43,7 +44,7 @@ articles = articles[::options.stride]
 
 name = term.replace('"','')
 name = '-'.join(name.split('+')[:5])
-w = open('word_embeddings/data/%s.json' % name, 'w', encoding="utf16")
+w = open('word_embeddings/data/%s.json' % options.file_name, 'w', encoding="utf16")
 chunk_cnt = 90
 saved_cnt = 0
 dict_art = {}
@@ -52,7 +53,6 @@ for i in range(0, len(articles), chunk_cnt):
     url = 'https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocjson?pmids=%s' % article_term
     print('\r'+article_term[:60]+'... ', end='')
     r = requests.get(url)
-    #r.encoding="utf8"
     assert r.status_code == 200
     for line in r.text.splitlines():
         line = json.loads(line)
