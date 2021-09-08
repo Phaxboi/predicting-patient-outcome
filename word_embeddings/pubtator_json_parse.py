@@ -22,6 +22,10 @@ for article_id in data:
 
     dict_art.update({article_id:{"title":title, "text":text}})
 
-
+#save only Atricle_id, title and text for each item
 with open("word_embeddings/data/data_parsed.json", "w") as write_file:
     json.dump(dict_art, write_file, indent=2)
+
+#save the list of all words
+corpus_file = open("word_embeddings/data/words.txt","w")
+

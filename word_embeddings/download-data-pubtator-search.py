@@ -43,7 +43,7 @@ articles = articles[::options.stride]
 
 name = term.replace('"','')
 name = '-'.join(name.split('+')[:5])
-w = open('word_embeddings/data/%s.json' % name, 'w')
+w = open('word_embeddings/data/%s.json' % name, 'w', encoding="utf16")
 chunk_cnt = 90
 saved_cnt = 0
 dict_art = {}
@@ -52,12 +52,13 @@ for i in range(0, len(articles), chunk_cnt):
     url = 'https://www.ncbi.nlm.nih.gov/research/pubtator-api/publications/export/biocjson?pmids=%s' % article_term
     print('\r'+article_term[:60]+'... ', end='')
     r = requests.get(url)
+    #r.encoding="utf8"
     assert r.status_code == 200
     for line in r.text.splitlines():
         line = json.loads(line)
         dict_art.update({line["id"]:line})
         #print(','+line, file=w) # prefix with comma for ES loader
         saved_cnt += 1
-json.dump(dict_art, w, indent=2)
+json.dump(dict_art, w, indent=2, ensure_ascii=False)
 print()
 print('saved pubtator articles:', saved_cnt)
