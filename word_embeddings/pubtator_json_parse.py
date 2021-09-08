@@ -29,4 +29,12 @@ with open("word_embeddings/data/data_parsed.json", "w", encoding="utf16") as wri
 #save the list of all words
 #corpus_file = open("word_embeddings/data/words.txt", "w", encoding="utf16")
 
+json_file = open("word_embeddings/data/data_parsed.json", encoding="utf16")
+data = json.load(json_file)
+file = open("word_embeddings/corpus.txt", "w", encoding="utf16")
 
+for article_id in data:
+    text = data[article_id]["text"]
+    file.writelines(text + "\n")
+
+file.close()
