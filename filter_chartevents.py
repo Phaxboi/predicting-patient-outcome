@@ -1,4 +1,6 @@
 #run this file to filter the charevents file to only contain events of the patients in your 'stays.csv' file
+#reduces the time it takes for it to load
+#NOTE this will create a new file called "chartevents_filtered" that you need to replace the originial file with to use it
 
 import argparse
 import os
