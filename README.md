@@ -66,3 +66,31 @@ python -m generate_in_hospital_mortality_model --subjects_root_path {root direct
 This will generate features and create a prediction model for the in-hospital prediction task. Can be either using our numerical apporach or categorical approach.
 Will write the features and outcomes to results\features_X.csv and results\outcomes_X.csv, where X is either 'numerical' or 'categorical' depending on the -categorical flag.
 After this the model can then be trained again with different parameters by setting the "-use_generated_features_file" flag. 
+
+
+
+
+*****HOW TO GENERATE WORD EMBEDDINGS, FILES LOCATED IN 'word_embeddings'*****
+
+
+**download articles from PubMed**
+
+python -m download-data-pubtator-search --search {search term, e.g. "cardiac failure"} --file_name {name of output file, should preferably be search term with underscores} --limit {number of articles to fetch from pubmed}
+
+This will fetch articles from PubMed according to the search term, will output two files to the 'data' directory, a list of all articles downloaded and an associated list of article IDs
+
+
+**preprocess documents and turn into corpus**
+
+python -m preprocessing --target_file_name {'what file in "data/" to preporcess'}
+
+This will run gensims "simple_preprocess" on each line in the targeted file. Will then output a corpus file to the "corpus" map.
+NOTE: target_file_name should NOT include path, only file name in the "data" map.
+
+
+**generate word2vec model**
+
+python -m word2vec.py --target_file_name {what corpus file to preprocess} --output_name {name of the output model file}
+
+This will create a word2vec model based on the corpus from the "target_file_name", a model will be saved in the "model" map.
+NOTE: target_file_name should NOT include path, only file name in the "data" map.
