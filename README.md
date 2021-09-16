@@ -55,6 +55,10 @@ missing values. This module will generate an 'episodeX_timeseries_48h.csv' for e
 of the first 48h for each patient. Outliers wll be removed according to the 'subjects_root_path\results\outlier_thresholds.csv' file.
 
 
+*****CATEGORY*****
+SKRIV TEXT HÄR!
+
+
 *****GENERATE FEATURES AND CREATE A SIMPLE IN-HOSPITAL PREDICTION MODEL*****
 
 python -m generate_in_hospital_mortality_model --subjects_root_path {root directory for generated subject folders} -use_generated_features_file (set if you want to use the previously generated features) -categorical {Set this if you want to run the categorical model instead of the numerical}
