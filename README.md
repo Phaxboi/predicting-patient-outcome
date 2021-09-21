@@ -79,7 +79,8 @@ After this the model can then be trained again with different parameters by sett
 
 python -m download-data-pubtator-search --search {search term, e.g. "cardiac failure"} --file_name {name of output file, should preferably be search term with underscores} --limit {number of articles to fetch from pubmed}
 
-This will fetch articles from PubMed according to the search term, will output two files to the 'data' directory, a list of all articles downloaded and an associated list of article IDs
+This will fetch articles from PubMed according to the search term, will output two files to the 'data' directory, a list of all articles downloaded and an associated list of article IDs.
+Use underscores to represent spaces in a search term, can be used when searching for a phrase in quotation marks eg. "blood_ph_level" -> "blood ph level".
 
 
 **preprocess documents and turn into corpus**
