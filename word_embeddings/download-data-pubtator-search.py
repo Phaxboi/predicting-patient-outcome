@@ -10,6 +10,7 @@ pubmed_rate_limit_hz = 3 # without (free) api key, only 3/s allowed
 parser = argparse.ArgumentParser()
 parser.add_argument('--search', nargs='+', help='search term, e.g. "cardiac failure"')
 parser.add_argument('--limit', default=1000, type=int, help='number or articles to fetch from pubmed')
+parser.add_argument('--filter', default='', help='pubmed filter')
 parser.add_argument('--stride', default=1, type=int, help='sample every N article')
 parser.add_argument('--file_name', help='name of output file, should preferably be search term with underscores')
 options = parser.parse_args()
@@ -17,11 +18,12 @@ options = parser.parse_args()
 
 term = ' '.join(options.search).replace(' ', '+')
 term = term.replace('_', ' ')
+filter = '&' + options.filter.replace(' ', '') if options.filter != '' else options.filter
 articles = []
 idx = 0
 while idx < options.limit:
     limit = 1000 if options.limit>=1000 else options.limit
-    url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retstart=%i&retmax=%s&sort=date&term=%s' % (idx, limit, term)
+    url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&retstart=%i&retmax=%s&sort=date&term=%s%s' % (idx, limit, term, filter)
     print(url, end='\r')
     t0 = time()
     info = requests.get(url).json()
