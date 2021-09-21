@@ -55,6 +55,12 @@ missing values. This module will generate an 'episodeX_timeseries_48h.csv' for e
 of the first 48h for each patient. Outliers wll be removed according to the 'subjects_root_path\results\outlier_thresholds.csv' file.
 
 
+*****CATEGORY*****
+python -m category --subjects_root_path {root directory for generated subject folders} -half_hour (Set if you run extract 48h on half hours.)
+
+Convert extract 48h episodes numerical values to discrete values (categories). Generates two files, one with both text information and the numerical value for the category and the second file with only the numerical value for the category, the second file will be used when generating features and creating a simple in-hospital prediction model.
+
+
 *****GENERATE FEATURES AND CREATE A SIMPLE IN-HOSPITAL PREDICTION MODEL*****
 
 python -m generate_in_hospital_mortality_model --subjects_root_path {root directory for generated subject folders} -use_generated_features_file (set if you want to use the previously generated features) -categorical {Set this if you want to run the categorical model instead of the numerical}
