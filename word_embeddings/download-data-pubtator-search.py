@@ -16,6 +16,7 @@ options = parser.parse_args()
 
 
 term = ' '.join(options.search).replace(' ', '+')
+term = term.replace('_', ' ')
 articles = []
 idx = 0
 while idx < options.limit:
