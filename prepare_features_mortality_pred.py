@@ -11,7 +11,6 @@ import pandas as pd
 from tqdm import tqdm
 from scipy.stats import skew
 from gensim.models import Word2Vec
-from word_embedding_features import *
 import json
 import re
 
