@@ -22,21 +22,21 @@ class MySentences(object):
         self.fname = fname
  
     def __iter__(self):
-        for line in open("corpus/" + self.fname + ".txt", encoding="utf16"):
+        for line in open("word_embeddings/corpus/" + self.fname + ".txt", encoding="utf16"):
             yield line.split()
  
 sentences = MySentences(options.target_file_name) # a memory-friendly iterator
 
-# doc = open("corpus/corpus_processed.txt", encoding="utf16")
-# lines = doc.readlines()
-# lines = [line.split() for line in lines]word_embeddings/
 
 start = time.time()
-model = gensim.models.Word2Vec(sentences,vector_size=100, min_count=5, workers=4)
+model = gensim.models.Word2Vec(sentences,vector_size=100, min_count=5, workers=4, window=10, epochs=20)
 end = time.time()
 print("time to train model: " + str((end - start)))
 
-model.save("models/" + options.output_name + "_model")
+model.save("word_embeddings/models/" + options.output_name + "_model")
+
+
+
 
 ##Code to generate bi/tri-grams
 # bigram = Phrases(sentences, min_count=5)

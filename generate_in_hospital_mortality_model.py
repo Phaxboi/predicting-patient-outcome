@@ -1,7 +1,5 @@
 #this file contains the methods used to run the regression model to predict in hopsital mortality
 
-from numpy.lib.function_base import append
-from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_curve
 from sklearn.metrics import RocCurveDisplay
@@ -30,9 +28,11 @@ def main():
     parser.add_argument('--subjects_root_path', type=str, help='Directory containing subject subdirectories.')
     parser.add_argument('-use_generated_features_file', action='store_true', help='Used to specify if the previously generated features in root/result should be used.')
     parser.add_argument('-categorical', action='store_true', help='Set this if you want to run the categorical model instead of the numerical.')
+    parser.add_argument('-use_word_embeddings', action='store_true', help='Set this to train models with word embeddings, preferably with \'use_generated_files\'')
     args = parser.parse_args()
 
     use_categorical_flag = args.categorical
+    use_word_embeddings = args.use_word_embeddings
 
     if args.use_generated_features_file:
         if use_categorical_flag:
@@ -44,9 +44,10 @@ def main():
 
         data_X = features.values
         data_Y = outcomes.values
+    
     else:
         #extract features for all patients
-        (data_X, data_Y) = extract_features(args.subjects_root_path, use_categorical_flag)
+        (data_X, data_Y) = extract_features(args.subjects_root_path, use_categorical_flag, use_word_embeddings)
 
         if(use_categorical_flag):
             features_file_name = 'features_categorical.csv'

@@ -1,0 +1,94 @@
+{
+    "Capillary refill rate":{
+        "categories_text": [],
+        "categories_num": [0, 1],
+        "categories_thresholds": [3]
+    },
+    "Diastolic blood pressure":{
+        "categories_text": ["hypotension", "normal", "hypertension"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [60, 90]
+    },
+    "Fraction inspired oxygen":{
+        "categories_text": [],
+        "categories_num": [],
+        "categories_thresholds": []
+    },    
+    "Glasgow coma scale eye opening":{
+        "categories_text": [],
+        "categories_num": [],
+        "categories_thresholds": []
+    },    
+    "Glasgow coma scale motor response":{
+        "categories_text": [],
+        "categories_num": [],
+        "categories_thresholds": []
+    },    
+    "Glasgow coma scale verbal response":{
+        "categories_text": [],
+        "categories_num": [],
+        "categories_thresholds": []
+    },    
+    "Glucose":{
+        "categories_text": ["hypoglycemia", "normal", "hyperglycemia"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [72, 200]
+    },    
+    "Heart rate":{
+        "categories_text": ["bradycardia", "normal", "tachycardia"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [50, 100]
+    },
+    
+    "Height":{
+        "categories_text": [],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [153.6, 199.3]        
+    },
+    "Height male":{
+        "categories_text": ["short stature", "normal", "tall stature"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [153.6, 199.3]        
+    },
+    "Height female":{
+        "categories_text": ["short stature", "normal", "tall stature"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [139.9, 184.5]        
+    },
+    "Mean blood pressure":{
+        "categories_text": ["hypotension", "normal", "hypertension"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [60, 140]   
+    },
+    "Oxygen saturation":{
+        "categories_text": ["hypoxemia", "normal", "hyperoxia"],
+        "categories_num": [0, 1],
+        "categories_thresholds": [90]   
+    },
+    "Respiratory Rate":{
+        "categories_text": ["bradypnea", "normal", "tachypnea"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [12, 16]   
+    },
+    "Systolic blood pressure":{
+        "categories_text": ["hypotension", "normal", "hypertension"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [90, 140]   
+    },
+    "Temperature":{
+        "categories_text": ["hypothermia", "normal", "hyperthermia", "hyperpyrexia"],
+        "categories_num": [0, 1, 2, 3],
+        "categories_thresholds": [35, 37.8, 40]   
+    },
+    "Weight":{
+        "categories_text": ["underweight", "normal", "overweight", "obesity"],
+        "categories_num": [0, 1, 2, 3],
+        "categories_thresholds": [18.5, 25, 30]   
+    },
+    "pH":{
+        "categories_text": ["acidemia", "normal", "acidosis"],
+        "categories_num": [0, 1, 2],
+        "categories_thresholds": [7.35, 7.45]
+        }
+
+}   

@@ -152,3 +152,6 @@ output_debug_5percent/
 output_debug_1000(old_working) 
 output_debug_small 
 word_embeddings/corpus.txt 
+word_embeddings/corpus/ 
+word_embeddings/models/ 
+output_5_percent/ 

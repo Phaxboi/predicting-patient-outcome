@@ -1,6 +1,4 @@
 #used to prepare the features for in hopsital mortality predictions
-#features here are currently a vector of the sum of each individual column tracked in the time series
-#probably not a good feature but it will do for now, as we're just testing
 
 from math import isnan
 from sklearn.preprocessing import StandardScaler
@@ -12,17 +10,25 @@ import argparse
 import pandas as pd
 from tqdm import tqdm
 from scipy.stats import skew
-
+from gensim.models import Word2Vec
+from word_embedding_features import *
+import json
 import re
 
 
 
 
-def extract_features(subjects_root_path, use_categorical_flag):
+def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddings):
     data_X = []
     data_Y = []
     mortalities = pd.read_csv(os.path.join(subjects_root_path, 'mortality_summary.csv'))
     mortalities.set_index('stay_id',inplace=True, drop=True)
+
+    
+    # if use_word_embeddings:
+    #     num_to_category = json.load("num_to_category.json")
+    #     wv = Word2Vec.load(corpus_path).wv
+
 
     check_filename_function = check_filename(use_categorical_flag)
     get_stay_id = get_stay_id_function(use_categorical_flag)
