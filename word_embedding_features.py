@@ -27,7 +27,7 @@ def to_word_embedding_features(subjects_root_path, we_model_path):
             if (file_name.startswith('episode') & file_name.endswith('timeseries_48h.csv')):
                 episode = pd.read_csv(os.path.join(root, file_name))
 
-                if file_name == 'episode1_35962072_timeseries_48h.csv':
+                if file_name == 'episode1_38761888_timeseries_48h.csv':
                     print('fak')
                 adm_id = re.search('.*_(\d*)_.*', file_name).group(1)
 
@@ -95,6 +95,10 @@ def get_word_embedding_single_episode(episode, wv, num_to_category):
         #get the vector representation for each word and weight them according to how many values were measured
         column_wvs += [[wv[text]/num_of_values] for text in column_text if text != "normal"]
 
+    #return a zero vector if no abnormal values are found NOTE: not sure if this is the best to do in thiis case
+    #but it only seems to occur once so it shouldnt be a problem
+    if column_wvs == []:
+        return ([0]*100)
 
     #summarize all vectors into one
     wv_summarized = ([sum(x) for x in zip(*column_wvs)])[0].tolist()
