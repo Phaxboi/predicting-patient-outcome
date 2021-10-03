@@ -20,6 +20,7 @@ import re
 def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddings):
     data_X = []
     data_Y = []
+    ids = []
     mortalities = pd.read_csv(os.path.join(subjects_root_path, 'mortality_summary.csv'))
     mortalities.set_index('stay_id',inplace=True, drop=True)
 
@@ -42,6 +43,7 @@ def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddin
             if(check_filename_function(file_name)):
                 episode = pd.read_csv(os.path.join(root, file_name))
                 stay_id = get_stay_id(file_name)
+                adm_id = re.search('.*_(\d*)_.*', file_name).group(1)
                 mortality = mortalities.loc[int(stay_id)].hospital_expire_flag
             
                 features = []
@@ -57,6 +59,7 @@ def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddin
                 #store the imputed values to use with scaler
                 data_X += [np.array(features)]
                 data_Y += [np.array([mortality])]
+                ids += [adm_id]
 
     #NOTE:code to save min and max values, 16 features total, pH included
     # values = []
@@ -77,7 +80,7 @@ def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddin
     scaler = StandardScaler()
     scaler.fit(data_X)
     data_X_standardized = scaler.transform(data_X)
-    return(data_X_standardized, data_Y)
+    return(data_X_standardized, data_Y, ids)
 
 
 

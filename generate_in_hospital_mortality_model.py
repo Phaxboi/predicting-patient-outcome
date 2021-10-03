@@ -34,6 +34,7 @@ def main():
     use_categorical_flag = args.categorical
     use_word_embeddings = args.use_word_embeddings
 
+    #read already generated files
     if args.use_generated_features_file:
         if use_categorical_flag:
             features = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features_categorical.csv'))
@@ -47,7 +48,7 @@ def main():
     
     else:
         #extract features for all patients
-        (data_X, data_Y) = extract_features(args.subjects_root_path, use_categorical_flag, use_word_embeddings)
+        (data_X, data_Y, ids) = extract_features(args.subjects_root_path, use_categorical_flag, use_word_embeddings)
 
         if(use_categorical_flag):
             features_file_name = 'features_categorical.csv'
@@ -63,6 +64,17 @@ def main():
         outcomes = pd.DataFrame(data_Y)
         outcomes.to_csv(os.path.join(args.subjects_root_path, 'result\\', outcomes_file_name), index=False)
 
+
+        #id list, to ensure order is correct between standard features, outcomes and wv features
+        ids_list = open(args.subjects_root_path + "/result/feature_outcomes_ids.csv", "w", encoding="utf16")
+        for item in ids:
+            ids_list.writelines(str(item) + "\n")
+        ids_list.close()
+
+    if(use_word_embeddings):
+        wv_df = (pd.read_csv(args.subjects_root_path + '/result/wv_feature_file.csv'))
+        data_X = (pd.concat([features, wv_df], axis=1)).values
+        #data_X = concat_wv_features(data_X, args.subjects_root_path)
 
 
     trainX, testX, trainy, testy = train_test_split(data_X, data_Y, test_size=0.15, random_state=2)
@@ -159,6 +171,16 @@ def main():
     
     pyplot.show()
     print("end")
+
+
+
+def concat_wv_features(data_X, subjects_root_path):
+    wvs = pd.read_csv(subjects_root_path + 'result/wv_feature_file.csv')
+
+
+
+
+
 
 
 
