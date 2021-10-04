@@ -1,91 +1,127 @@
 {
     "Capillary refill rate":{
+        "use_for_wv": 0,
+        "categorized": 1,
         "categories_text": [],
         "categories_num": [0, 1],
         "categories_thresholds": [3]
     },
     "Diastolic blood pressure":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["hypotension", "normal", "hypertension"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [60, 90]
     },
     "Fraction inspired oxygen":{
+        "use_for_wv": 0,
+        "categorized": 0,
         "categories_text": [],
         "categories_num": [],
-        "categories_thresholds": []
+        "categories_thresholds": [21]
     },    
     "Glasgow coma scale eye opening":{
+        "use_for_wv": 0,
+        "categorized": 1,
         "categories_text": [],
         "categories_num": [],
         "categories_thresholds": []
     },    
     "Glasgow coma scale motor response":{
+        "use_for_wv": 0,
+        "categorized": 1,
         "categories_text": [],
         "categories_num": [],
         "categories_thresholds": []
     },    
     "Glasgow coma scale verbal response":{
+        "use_for_wv": 0,
+        "categorized": 1,
         "categories_text": [],
         "categories_num": [],
         "categories_thresholds": []
     },    
     "Glucose":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["hypoglycemia", "normal", "hyperglycemia"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [72, 200]
     },    
     "Heart rate":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["bradycardia", "normal", "tachycardia"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [50, 100]
     },
     
     "Height":{
+        "use_for_wv": 0,
+        "categorized": 0,
         "categories_text": [],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [153.6, 199.3]        
     },
     "Height male":{
+        "use_for_wv": 0,
+        "categorized": 0,
         "categories_text": ["short stature", "normal", "tall stature"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [153.6, 199.3]        
     },
     "Height female":{
+        "use_for_wv": 0,
+        "categorized": 0,
         "categories_text": ["short stature", "normal", "tall stature"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [139.9, 184.5]        
     },
     "Mean blood pressure":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["hypotension", "normal", "hypertension"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [60, 140]   
     },
     "Oxygen saturation":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["hypoxemia", "normal", "hyperoxia"],
         "categories_num": [0, 1],
         "categories_thresholds": [90]   
     },
     "Respiratory Rate":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["bradypnea", "normal", "tachypnea"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [12, 16]   
     },
     "Systolic blood pressure":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["hypotension", "normal", "hypertension"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [90, 140]   
     },
     "Temperature":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["hypothermia", "normal", "hyperthermia", "hyperpyrexia"],
         "categories_num": [0, 1, 2, 3],
         "categories_thresholds": [35, 37.8, 40]   
     },
     "Weight":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["underweight", "normal", "overweight", "obesity"],
         "categories_num": [0, 1, 2, 3],
         "categories_thresholds": [18.5, 25, 30]   
     },
     "pH":{
+        "use_for_wv": 1,
+        "categorized": 0,
         "categories_text": ["acidemia", "normal", "acidosis"],
         "categories_num": [0, 1, 2],
         "categories_thresholds": [7.35, 7.45]

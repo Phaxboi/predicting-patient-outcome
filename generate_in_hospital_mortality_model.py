@@ -71,18 +71,28 @@ def main():
             ids_list.writelines(str(item) + "\n")
         ids_list.close()
 
+    #read the raw data, concat new feature then re-scale the data
     if(use_word_embeddings):
+        if(use_categorical_flag):
+            features_raw = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features_categorical_raw.csv'))
+        else:
+            features_raw = pd.read_csv(os.path.join(args.subjects_root_path, 'result\\features_numerical_raw.csv'))
+
         wv_df = (pd.read_csv(args.subjects_root_path + '/result/wv_feature_file.csv'))
-        data_X = (pd.concat([features, wv_df], axis=1)).values
-        #data_X = concat_wv_features(data_X, args.subjects_root_path)
+        data_X_raw = (pd.concat([features_raw, wv_df], axis=1)).values
+
+        scaler = StandardScaler()
+        scaler.fit(data_X_raw)
+        data_X = scaler.transform(data_X_raw)
+
 
 
     trainX, testX, trainy, testy = train_test_split(data_X, data_Y, test_size=0.15, random_state=2)
     testy = np.array(testy)
     trainy = np.array(trainy)
-    model = LogisticRegression(penalty='l2', C=0.001)#, random_state=42
+    model = LogisticRegression(penalty='l2', C=0.01)#, random_state=42
     #model = RandomForestClassifier(n_estimators= 1000, random_state= 42)
-    model.fit(trainX, trainy)
+    model.fit(trainX, trainy.ravel())
     print('Test accuracy:'+ str(model.score(testX, testy)))
 
 

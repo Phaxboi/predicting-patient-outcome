@@ -75,7 +75,7 @@ def get_word_embedding_single_episode(episode, wv, num_to_category):
         categories_text = column_info["categories_text"]
         
         #for some columns there exist no good words to look at, so we skip those
-        if(len(categories_text) == 0):
+        if(column_info["use_for_wv"] == 0):
             continue
 
         column = episode.get(column_name)        

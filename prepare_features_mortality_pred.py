@@ -24,6 +24,9 @@ def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddin
     mortalities = pd.read_csv(os.path.join(subjects_root_path, 'mortality_summary.csv'))
     mortalities.set_index('stay_id',inplace=True, drop=True)
 
+    file = open("num_to_category.json")
+    num_to_category = json.load(file)
+
     
     # if use_word_embeddings:
     #     num_to_category = json.load("num_to_category.json")
@@ -54,7 +57,7 @@ def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddin
                 first_value_time = hours[0]
                 last_value_time = hours[-1]
                 
-                features = extract_features_single_episode(start_stop_percentages, first_value_time, last_value_time, episode, hours)
+                features = extract_features_single_episode(start_stop_percentages, first_value_time, last_value_time, episode, hours, use_categorical_flag, num_to_category)
 
                 #store the imputed values to use with scaler
                 data_X += [np.array(features)]
@@ -77,6 +80,13 @@ def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddin
     imputer.fit(data_X)
     data_X = imputer.transform(data_X)
 
+    #save the raw feature data(before scaling), to be used with word embeddings
+    data_X_df = pd.DataFrame(data_X)
+    if(use_categorical_flag):
+        data_X_df.to_csv((subjects_root_path + '/result' + '/features_categorical_raw.csv'), index=False)
+    else:
+        data_X_df.to_csv((subjects_root_path + '/result' + '/features_numerical_raw.csv'), index=False)
+
     scaler = StandardScaler()
     scaler.fit(data_X)
     data_X_standardized = scaler.transform(data_X)
@@ -85,13 +95,16 @@ def extract_features(subjects_root_path, use_categorical_flag, use_word_embeddin
 
 
 #extract features for a single episode
-def extract_features_single_episode(start_stop_percentages, first_value_time, last_value_time, episode, hours):
+def extract_features_single_episode(start_stop_percentages, first_value_time, last_value_time, episode, hours, use_categorical_flag, num_to_category):
     features = []
     #get a dictionary with (time, value) pairs for each column, NOTE: only contains timestamp where there are values, so all 'nans' are removed
-    episode_disctionary = convert_timeseries_to_dict(episode, hours)
+    episode_dictionary = convert_timeseries_to_dict(episode, hours)
+
+    #create mapping between column name and dictionary
+    zipped = zip(episode.columns.tolist(), episode_dictionary)
 
     #for each column extract the 7 slices and calculate features
-    for column in episode_disctionary:
+    for (col_name, column) in zipped:
         col_features = []
 
         for (case, percetage) in start_stop_percentages:
@@ -106,6 +119,13 @@ def extract_features_single_episode(start_stop_percentages, first_value_time, la
 
             #extract all values within the given timeframe
             data = [value for (time, value) in column if (start_idx <= time <= end_idx)]
+
+            #if the categorical flag is set we discretize each value
+            column_info = num_to_category[col_name]
+            if(use_categorical_flag and (column_info["categorized"] == 0)):
+                categories_thresholds = column_info["categories_thresholds"]
+
+                data = np.searchsorted(categories_thresholds, data)
 
             if len(data) == 0:
                 #NOTE hardcoded atm
@@ -141,10 +161,10 @@ def convert_timeseries_to_dict(episode, hours):
 
 
 def check_filename(use_categorical_flag):
-    if(use_categorical_flag):
-        func = check_filename_categorical
-    else:
-        func = check_filename_numerical
+    # if(use_categorical_flag):
+    #     func = check_filename_categorical
+    # else:
+    func = check_filename_numerical
     return(func)
 
 def check_filename_categorical(filename):
@@ -157,10 +177,10 @@ def check_filename_numerical(filename):
 
 
 def get_stay_id_function(use_categorical_flag):
-    if(use_categorical_flag):
-        func = get_stay_id_categorical
-    else:
-        func = get_stay_id_numerical
+    # if(use_categorical_flag):
+    #     func = get_stay_id_categorical
+    # else:
+    func = get_stay_id_numerical
     return(func)
 
 def get_stay_id_categorical(filename):
